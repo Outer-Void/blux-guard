@@ -1,0 +1,3 @@
+# Example policy file
+com.example.new=whitelist
+com.example.other=blacklist

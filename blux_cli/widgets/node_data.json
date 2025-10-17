@@ -1,0 +1,39 @@
+{
+    "The Outer Void": {
+        "description": "BLUX Ecosystem Root",
+        "security_level": "SYSTEM",
+        "capabilities": ["Full ecosystem access", "Cross-platform security", "AI integration"]
+    },
+    "BLUX_Ecosystem": {
+        "description": "Core BLUX Security Platform",
+        "security_level": "HIGH",
+        "capabilities": ["Multi-environment support", "Real-time monitoring", "Threat detection"]
+    },
+    "BLUX_Guard_Ultra — Terminal Cockpit": {
+        "description": "Security Monitoring Interface",
+        "security_level": "HIGH",
+        "capabilities": ["Real-time dashboards", "Process monitoring", "Network security"]
+    },
+    "BLUX_Lite-(GOLD) — Orchestrator": {
+        "description": "AI-Powered Security Orchestration",
+        "security_level": "HIGH",
+        "capabilities": ["Task coordination", "Plugin management", "Memory system"]
+    },
+    "BLUX-cA — Conscious Agent (v0.1)": {
+        "description": "AI Conscious Security Agent",
+        "security_level": "CRITICAL",
+        "capabilities": ["Policy enforcement", "Intervention system", "Audit trails"]
+    },
+    "Defender — Intrusion Detector": {
+        "description": "Real-time Intrusion Detection",
+        "security_level": "HIGH",
+        "requires_root": true,
+        "capabilities": ["Anomaly detection", "Pattern analysis", "Alert system"]
+    },
+    "Network Monitor — Conn Watch": {
+        "description": "Network Connection Monitoring",
+        "security_level": "MEDIUM",
+        "requires_root": true,
+        "capabilities": ["Connection tracking", "Traffic analysis", "Threat detection"]
+    }
+}

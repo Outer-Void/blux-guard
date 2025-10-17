@@ -1,0 +1,402 @@
+{
+  "manifest_version": "1.0",
+  "generated_by": "blux-guard/rulegen-v1",
+  "generated_at": "2025-10-13T00:00:00Z",
+  "rules": [
+    {
+      "id": "silent_exfil",
+      "name": "Silent exfil: many distinct remote IPs",
+      "description": "Detect a process/app opening many distinct external sockets in a short time window — high-confidence exfiltration pattern.  Indicates a process is attempting to send data to multiple destinations quickly.",
+      "severity": "high",
+      "confidence": 0.9,
+      "tags": ["network", "exfiltration", "threshold"],
+      "condition": {
+        "type": "threshold",
+        "field": "network.remote_ips_count",
+        "op": "gt",
+        "value": 10,
+        "window": 60
+      },
+      "response": [
+        {
+          "stage": "observe",
+          "action": "log",
+          "params": {
+            "note": "silent_exfil_observed",
+            "capture": ["socket_list", "dns_queries", "ja3"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "snapshot",
+          "action": "snapshot_process",
+          "params": {
+            "capture_memory": true,
+            "pcap_bytes": 65536
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "throttle",
+          "action": "apply_qos_cap",
+          "params": {
+            "network_rate_kbps": 16,
+            "duration_s": 600
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "quarantine",
+          "action": "isolate_uid",
+          "params": {
+            "method": "vpn_block_per_uid"
+          },
+          "operator_ack": true
+        }
+      ],
+      "pow": {
+        "required": true,
+        "difficulty": 18,
+        "rationale": "raise compute cost for bursts"
+      },
+      "cooldown": 300,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    },
+    {
+      "id": "mount_surprise",
+      "name": "Mount surprise: removable SD mounted while locked + charging",
+      "description": "Removable storage attached while device is locked and charging and user absent for a long period — high risk for unattended data harvesting or staging.  Suggests someone is physically accessing the device for unauthorized purposes.",
+      "severity": "medium",
+      "confidence": 0.85,
+      "tags": ["filesystem", "removable", "physical"],
+      "condition": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "match",
+            "field": "device.charging",
+            "value": true
+          },
+          {
+            "type": "exists",
+            "field": "device.removable_sd_mounted"
+          },
+          {
+            "type": "match",
+            "field": "device.screen_locked",
+            "value": true
+          },
+          {
+            "type": "threshold",
+            "field": "device.time_since_last_unlock_hours",
+            "op": "gte",
+            "value": 12,
+            "window": 3600
+          }
+        ]
+      },
+      "response": [
+        {
+          "stage": "observe",
+          "action": "log",
+          "params": {
+            "capture": ["mount_point", "mount_options", "device_id"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "contain",
+          "action": "remount_readonly",
+          "params": {
+            "path_field": "device.removable_sd_path"
+          },
+          "operator_ack": true
+        },
+        {
+          "stage": "snapshot",
+          "action": "compute_and_store_checksums",
+          "params": {
+            "hashes": ["sha256"],
+            "store": "security/logs/forensics"
+          },
+          "operator_ack": false
+        }
+      ],
+      "pow": {
+        "required": false
+      },
+      "cooldown": 120,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    },
+    {
+      "id": "privilege_creep",
+      "name": "Privilege creep: new permission shortly after unknown network connection",
+      "description": "Detect when an app gains a new runtime permission (or installs helper) shortly after unknown/outbound network connections — potential remote install/callback chain.  Indicates possible malware installation or remote code execution.",
+      "severity": "high",
+      "confidence": 0.9,
+      "tags": ["permission", "timeline", "correlation"],
+      "condition": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "exists",
+            "field": "app.new_permission"
+          },
+          {
+            "type": "threshold",
+            "field": "network.unknown_conn_count",
+            "op": "gt",
+            "value": 0,
+            "window": 120
+          }
+        ]
+      },
+      "response": [
+        {
+          "stage": "observe",
+          "action": "log",
+          "params": {
+            "capture": ["permission_name", "installer_package", "recent_conns"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "snapshot",
+          "action": "binary_and_manifest_capture",
+          "params": {
+            "capture_paths": ["app.apk_path", "app.code_hash", "signing_cert"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "revert",
+          "action": "revoke_permission",
+          "params": {
+            "permission_field": "app.new_permission"
+          },
+          "operator_ack": true
+        },
+        {
+          "stage": "quarantine",
+          "action": "freeze_app",
+          "params": {
+            "method": "force_stop_and_net_isolate"
+          },
+          "operator_ack": true
+        }
+      ],
+      "pow": {
+        "required": true,
+        "difficulty": 20,
+        "rationale": "prevent automated escalation without operator involvement"
+      },
+      "cooldown": 600,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    },
+    {
+      "id": "ui_hijack_overlay",
+      "name": "UI hijack overlay close to credential event",
+      "description": "Overlay/request for SYSTEM_ALERT_WINDOW or similar within a short window of credential entry events — strong signal for phishing / UI overlay capture.  Someone is trying to steal credentials by covering the real UI with a fake one.",
+      "severity": "high",
+      "confidence": 0.92,
+      "tags": ["ui", "phishing", "overlay"],
+      "condition": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "exists",
+            "field": "ui.overlay_detected"
+          },
+          {
+            "type": "exists",
+            "field": "event.credential_entry_time"
+          },
+          {
+            "type": "threshold",
+            "field": "ui.overlay_age_seconds",
+            "op": "lt",
+            "value": 5,
+            "window": 10
+          }
+        ]
+      },
+      "response": [
+        {
+          "stage": "observe",
+          "action": "log",
+          "params": {
+            "capture": ["overlay_pid", "app_package", "overlay_layout_dump"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "contain",
+          "action": "block_overlay",
+          "params": {
+            "method": "block_system_alert_window_for_uid"
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "prompt",
+          "action": "operator_prompt",
+          "params": {
+            "message": "Overlay detected during credential entry. Approve overlay or quarantine app?"
+          },
+          "operator_ack": true
+        }
+      ],
+      "pow": {
+        "required": false
+      },
+      "cooldown": 60,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    },
+    {
+      "id": "process_mimic",
+      "name": "Process mimic: same package name, different signing cert or binary hash",
+      "description": "Detect when an installed package presents a previously known package name but its signing certificate or binary hash differs — potential masquerade/tampering. This is a strong indicator of an app being replaced with a malicious version.",
+      "severity": "critical",
+      "confidence": 0.95,
+      "tags": ["integrity", "signing", "tamper"],
+      "condition": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "exists",
+            "field": "app.package_name"
+          },
+          {
+            "type": "exists",
+            "field": "app.current_signature"
+          },
+          {
+            "type": "exists",
+            "field": "app.known_signature_mismatch"
+          }
+        ]
+      },
+      "response": [
+        {
+          "stage": "snapshot",
+          "action": "capture_binaries_and_cert",
+          "params": {
+            "store": "security/logs/forensics"
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "quarantine",
+          "action": "freeze_app_and_block_uid",
+          "params": {
+            "retain": ["hashes", "manifest", "install_source"]
+          },
+          "operator_ack": true
+        },
+        {
+          "stage": "forensics",
+          "action": "preserve_boot_state",
+          "params": {
+            "note": "critical_integrity_suspected"
+          },
+          "operator_ack": true
+        }
+      ],
+      "pow": {
+        "required": false
+      },
+      "cooldown": 3600,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    },
+    {
+      "id": "cold_start_lateral",
+      "name": "Cold-start lateral: unknown AUTOSTART receiver after reboot",
+      "description": "Detect unknown receivers or autostart hooks registered after boot — potential lateral persistence or post-boot implant.  This often signifies a malicious app setting itself up to run automatically after the device restarts.",
+      "severity": "high",
+      "confidence": 0.88,
+      "tags": ["boot", "autostart", "persistence"],
+      "condition": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "match",
+            "field": "system.boot_completed",
+            "value": true
+          },
+          {
+            "type": "exists",
+            "field": "app.autostart_receiver_new"
+          },
+          {
+            "type": "threshold",
+            "field": "system.uptime_minutes",
+            "op": "lt",
+            "value": 5,
+            "window": 300
+          }
+        ]
+      },
+      "response": [
+        {
+          "stage": "observe",
+          "action": "log",
+          "params": {
+            "capture": ["receiver_intent", "registering_package", "timestamp"]
+          },
+          "operator_ack": false
+        },
+        {
+          "stage": "contain",
+          "action": "block_autostart_until_review",
+          "params": {
+            "method": "disable_receiver_pending_operator"
+          },
+          "operator_ack": true
+        },
+        {
+          "stage": "snapshot",
+          "action": "collect_process_list_and_bindings",
+          "params": {
+            "store": "security/logs/forensics"
+          },
+          "operator_ack": false
+        }
+      ],
+      "pow": {
+        "required": false
+      },
+      "cooldown": 900,
+      "meta": {
+        "version": "1",
+        "author": "blux",
+        "created_at": "2025-10-13T00:00:00Z"
+      },
+      "signature": null
+    }
+  ]
+}

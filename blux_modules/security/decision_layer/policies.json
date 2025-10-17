@@ -1,0 +1,4 @@
+{
+    "com.example.new": "whitelist",
+    "com.example.other": "blacklist"
+}

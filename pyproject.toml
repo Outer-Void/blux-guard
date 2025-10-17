@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blux-guard"
+version = "1.0.0"
+description = "Terminal TUI Dev Security / BLUX Ecosystem Cockpit"
+readme = "README.md"
+authors = [{ name = "Outer Void Team" }]
+license = { text = "Apache 2.0 License" }
+dependencies = [
+    "argon2-cffi",
+    "cryptography",
+    "textual",
+    "textual-dev",
+    "rich",
+    "pysqlite3"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["blux_modules*"]  # If you have other modules in a blux_modules directory
+
+[tool.setuptools.package-data]
+blux_modules = ["*"]
