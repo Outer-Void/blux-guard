@@ -35,7 +35,7 @@ class SecurityIntegration:
         try:
             # Import security modules
             from blux_modules.security.auth_system import AuthSystem
-            from blux_modules.security.privilege_manager import PrivilegeManager
+    # PrivilegeManager imported conditionally below
             
             self.auth_system = AuthSystem()
             self.privilege_mgr = PrivilegeManager()
@@ -236,7 +236,7 @@ class SecurityIntegration:
             priv_info = self.privilege_mgr.get_privilege_info()
             
             print(f"\n🖥️  System Information")
-            print(f"   Platform: {priv_info['platform']['system']}")
+            print(f"   Platform: {priv_info.get('platform', {}).get('system', 'Unknown')}")
             print(f"   Architecture: {priv_info['platform']['architecture']}")
             print(f"   Root Access: {'✅ YES' if priv_info['is_root'] else '❌ NO'}")
             

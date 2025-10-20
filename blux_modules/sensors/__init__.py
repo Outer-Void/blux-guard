@@ -4,10 +4,20 @@ BLUX Guard Sensors Package
 Contains all sensor modules for collecting security-relevant data.
 """
 
-from . import network
-from . import dns
-from . import process_lifecycle
-from . import filesystem
-from . import permissions
-from . import hardware
-from . import human_factors
+from .network import NetworkSensor
+from .dns import DNSSensor
+from .process_lifecycle import ProcessSensor
+from .filesystem import FileSystemSensor
+from .permissions import PermissionSensor
+from .hardware import HardwareSensor
+from .human_factors import HumanFactorsSensor
+
+__all__ = [
+    'NetworkSensor',
+    'DNSSensor', 
+    'ProcessSensor',
+    'FileSystemSensor',
+    'PermissionSensor',
+    'HardwareSensor',
+    'HumanFactorsSensor'
+]
