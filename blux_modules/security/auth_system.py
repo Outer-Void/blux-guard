@@ -106,7 +106,7 @@ class AuthSystem:
                     if key not in config:
                         config[key] = default_config[key]
                         if key not in sensitive_keys:
-                            self.logger.warning(f"Missing key '{key}' in config. Using default value.")
+                            self.logger.warning("Missing non-sensitive configuration key in config. Using default value.")
 
             except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
                 print(f"Error loading config, using defaults: {e}")
