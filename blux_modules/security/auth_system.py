@@ -100,10 +100,13 @@ class AuthSystem:
                     config = json.load(f)
 
                 # Validate keys
+                # Avoid logging sensitive key names
+                sensitive_keys = {"min_password_length", "password", "secret", "token", "passcode", "api_key"}
                 for key in default_config:
                     if key not in config:
                         config[key] = default_config[key]
-                        self.logger.warning(f"Missing key '{key}' in config. Using default value.")
+                        if key not in sensitive_keys:
+                            self.logger.warning(f"Missing key '{key}' in config. Using default value.")
 
             except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
                 print(f"Error loading config, using defaults: {e}")
