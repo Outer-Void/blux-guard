@@ -190,10 +190,13 @@ class AuthSystem:
         return ph.hash(password)
 
     def _hash_password_basic(self, password: str) -> str:
-        """Fallback: Create a basic SHA256 hash with salt (less secure)"""
-        salt = secrets.token_hex(8)
-        hashed_password = hashlib.sha256((password + salt).encode('utf-8')).hexdigest()
-        return f"{salt}${hashed_password}"
+        """Fallback: Use PBKDF2-HMAC-SHA256 for password hashing with random salt and sufficient iterations"""
+        salt = secrets.token_hex(16)
+        iterations = 100000
+        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), iterations)
+        salt_hex = salt
+        key_hex = key.hex()
+        return f"{iterations}${salt_hex}${key_hex}"
 
     def verify_password(self, password: str, hash_string: str) -> bool:
         """Verify password against stored hash"""
