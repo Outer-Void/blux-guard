@@ -12,6 +12,7 @@ import hashlib
 import base64
 import secrets
 import subprocess
+from cryptography.fernet import Fernet
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -49,6 +50,8 @@ INC_DIR = Path(os.environ.get("SWARM_INCIDENT_DIR", str(HOME / ".tripengine")))
 YARA_RULES_DIR = Path(os.environ.get("SWARM_YARA_RULES_DIR", str(HOME / ".tripengine" / "yara_rules")))
 OUTBOX = INC_DIR / "outbox" # Not needed
 SECRET_FILE = INC_DIR / "secret.key"
+# Fernet encryption key file (used for encrypting secrets)
+FERNET_KEY_FILE = INC_DIR / "fernet.key"
 QUARANTINE_SCRIPT = Path(os.environ.get("SWARM_QUARANTINE_SCRIPT", str(HOME / "bin" / "quarantine_apk.sh")))
 NUM_AGENTS = int(os.environ.get("SWARM_NUM_AGENTS", "5"))
 WATCH_DIRECTORIES = os.environ.get("SWARM_WATCH_DIRS", f"{HOME / 'Download'},/sdcard/Download").split(",")
@@ -70,16 +73,34 @@ else:
     rules = None  # YARA not available
 
 # --- Secret Key Rotation Logic ---
+def get_fernet_key():
+    """
+    Loads the Fernet encryption key from disk, or generates and saves one if missing.
+    Fernet key itself is stored with restrictive permissions.
+    """
+    if not FERNET_KEY_FILE.exists():
+        key = Fernet.generate_key()
+        FERNET_KEY_FILE.write_bytes(key)
+        os.chmod(str(FERNET_KEY_FILE), 0o600)
+        logger.info(f"Generated new Fernet key at {FERNET_KEY_FILE}")
+        return key
+    return FERNET_KEY_FILE.read_bytes()
+
 def get_secret_key():
     """
     Generates a secret key or retrieves it from a file, rotating it daily.
+    Key is encrypted at rest using Fernet symmetric encryption.
     """
     today = datetime.now().strftime("%Y-%m-%d")
     key_file_name = f"secret_{today}.key"
     key_file_path = INC_DIR / key_file_name
+    fernet_key = get_fernet_key()
+    fernet = Fernet(fernet_key)
     try:
         if key_file_path.exists():
-            return key_file_path.read_bytes().strip()
+            # Read and decrypt secret
+            encrypted_secret = key_file_path.read_bytes()
+            return fernet.decrypt(encrypted_secret)
         else:
             # Generate new key
             new_secret = secrets.token_hex(32).encode()
@@ -90,10 +111,11 @@ def get_secret_key():
                         file.unlink()
                     except Exception as e:
                         logger.error(f"Error deleting old secret file {file}: {e}")
-            # Write the new secret and protect it
-            key_file_path.write_bytes(new_secret)
+            # Encrypt and write the new secret and protect it
+            encrypted_secret = fernet.encrypt(new_secret)
+            key_file_path.write_bytes(encrypted_secret)
             os.chmod(str(key_file_path), 0o600)
-            logger.info(f"Generated and saved new secret key at {key_file_path}")
+            logger.info(f"Generated and saved new encrypted secret key at {key_file_path}")
             return new_secret
     except Exception as e:
         logger.error(f"Error handling secret key: {e}")
