@@ -1,32 +1,12 @@
 # BLUX Guard
 
-Android Terminal High-Alert Security System
+> Android Terminal High-Alert Security System
 
 ---
 
 ## Vision
 
-A discreet, layered defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect your own devices — transparent, auditable, and always under operator control.
-
----
-
-## What's New 🚀
-
-Enhanced Sensor Suite - Completely upgraded monitoring capabilities:
-
-· Real-time Filesystem Monitoring with integrity checking and hash verification
-· Advanced Network Analysis with threat detection and port scanning alerts
-· Hardware Security Monitoring for USB, Bluetooth, and power management
-· Process Lifecycle Tracking with suspicious activity detection
-· Human Factors Analysis for behavioral pattern monitoring
-· Permission Change Detection with security impact assessment
-
-Enterprise-Grade Architecture:
-
-· Object-oriented sensor classes with proper error handling
-· Threaded continuous monitoring with start/stop control
-· Comprehensive logging and history tracking
-· Configurable monitoring intervals and thresholds
+A discreet, layered defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices** — transparent, auditable, and always under operator control.
 
 ---
 
@@ -34,44 +14,118 @@ Enterprise-Grade Architecture:
 
 ```bash
 blux-guard/
-├── .config/
-│   ├── blux-guard/              # runtime configs, keys, manifests
-│   └── rules/
-│       └── rules.json           # signed rule manifests (trip-wires)
+├── blux_cli/
+│   ├── blux.py
+│   ├── __init__.py
+│   ├── security_integration.py
+│   └── widgets/
+│       ├── anti_tamper_controls.py
+│       ├── blux_cockpit.css
+│       ├── cockpit_header_footer.py
+│       ├── decisions_view.py
+│       ├── dev_menu_tree.py
+│       ├── __init__.py
+│       ├── logs_view.py
+│       ├── network_monitor.py
+│       ├── node_data.json
+│       ├── process_monitor.py
+│       ├── scripts_view.py
+│       ├── sensors_dashboard.py
+│       └── tree.py
+├── blux_guard_shell/
+│   ├── __init__.py
+│   └── shell_menu.py
 ├── blux_modules/
-│   └── sensors/                 # enhanced security sensors
-│       ├── __init__.py          # package exports
-│       ├── network.py           # network flows & connections
-│       ├── dns.py               # DNS query monitoring
-│       ├── process_lifecycle.py # process start/stop tracking
-│       ├── filesystem.py        # file creation/modification
-│       ├── permissions.py       # permission change detection
-│       ├── hardware.py          # USB/BT/charging monitoring
-│       └── human_factors.py     # user presence & behavior
-├── blux-cli                     # main CLI launcher (entrypoint)
-├── docs/
-│   └── assets/                  # diagrams, rule samples, visuals
-├── scripts/                     # operational shell utilities
-├── security/
-│   └── trip_engine.py           # Termux-friendly Trip Engine demo
-└── logs/                        # append-only incident logs
+│   ├── __init__.py
+│   ├── security/
+│   │   ├── anti_tamper/
+│   │   │   ├── __init__.py
+│   │   │   ├── nano_swarm/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── swarm.css
+│   │   │   │   └── swarm_sim.py
+│   │   │   ├── package_monitor.py
+│   │   │   ├── selinux_monitor.py
+│   │   │   ├── su_sentinel.py
+│   │   │   └── watchdog/
+│   │   │       ├── heartbeat.py
+│   │   │       └── __init__.py
+│   │   ├── anti_tamper_engine.py
+│   │   ├── auth_system.py
+│   │   ├── contain_engine.py
+│   │   ├── contain_respond/
+│   │   │   ├── filesystem.py
+│   │   │   ├── __init__.py
+│   │   │   ├── logging.py
+│   │   │   └── network_intercepter.py
+│   │   ├── decision_layer/
+│   │   │   ├── __init__.py
+│   │   │   ├── policies.json
+│   │   │   ├── policies.txt
+│   │   │   └── uid_policies.py
+│   │   ├── decisions_engine.py
+│   │   ├── __init__.py
+│   │   ├── privilege_manager.py
+│   │   ├── sensors_manager.py
+│   │   └── trip_engine.py
+│   └── sensors/
+│       ├── dns.py
+│       ├── filesystem.py
+│       ├── hardware.py
+│       ├── human_factors.py
+│       ├── __init__.py
+│       ├── network.py
+│       ├── permission.py
+│       ├── permissions.py
+│       └── process_lifecycle.py
+├── blux_shell.py
+├── initiate_cockpit.py
+├── logs/
+│   ├── anti_tamper/
+│   ├── decisions/
+│   │   └── incidents.log
+│   └── sensors/
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+└── scripts/
+    ├── auth_reset.py
+    ├── check_root.sh
+    ├── check_status.sh
+    ├── clean_temp.sh
+    ├── create_venv.sh
+    ├── daily_report.sh
+    ├── debug_env.sh
+    ├── initiate_cockpit.sh
+    ├── __init__.py
+    ├── inspect_modules.py
+    ├── reload_config.sh
+    ├── restart.sh
+    ├── root_workaround.sh
+    ├── rotate_logs.sh
+    ├── run_guard.sh
+    ├── schedule_checks.sh
+    ├── setup_env.sh
+    ├── setup_security.py
+    ├── set_user_pin.sh
+    ├── unlock_system.sh
+    └── update_modules.sh
+
+21 directories, 114 files
 ```
 
 ---
 
-## 1. Enhanced Architecture Overview
+## 1. Architecture Overview
 
 Sensors → Trip Engine → Decision Layer → Containment → Operator
 
-1.1 Enhanced Sensors (Data Sources)
+1.1 Sensors (Data Sources)
 
-· Network Sensor: Real connection monitoring with threat detection
-· DNS Sensor: Query analysis with suspicious domain detection
-· Process Sensor: Lifecycle tracking with security analysis
-· Filesystem Sensor: Real-time monitoring with integrity checking
-· Permission Sensor: Change detection with security impact assessment
-· Hardware Sensor: USB/BT/charging with whitelist enforcement
-· Human Factors: Behavioral patterns and presence analysis
+· Network flows, DNS queries, process lifecycle
+· Filesystem changes, permission modifications
+· Hardware events: charging, BT pairing, USB attach
+· Human factors: unlock patterns, presence windows
 
 1.2 Trip Engine (Deterministic Rules)
 
@@ -90,7 +144,7 @@ Sensors → Trip Engine → Decision Layer → Containment → Operator
 · Network interceptor (VpnService-like)
 · Process isolator / snapshot & rollback
 · Filesystem quarantine, permission reverter, UI fuse
-· Signed incident logs in security/logs/
+· Signed incident logs in logs/decisions/incidents.log
 
 1.5 Integrity & Anti-tamper
 
@@ -100,171 +154,166 @@ Sensors → Trip Engine → Decision Layer → Containment → Operator
 
 ---
 
-## 2. Enhanced Trip-Variable Examples
+## 2. Core Components
 
-Deterministic, time-bounded, and auditable
+2.1 Security Modules (blux_modules/security/)
 
-Scenario Trip Condition Enhanced Action
-Silent Exfil 10 external sockets to distinct IPs in 60s Block, snapshot process, network quarantine
-Mount Surprise SD mounted while locked & charging & idle 12h+ Read-only mount, file checksum verification
-Privilege Creep New permission + unknown network connection Permission revert, process quarantine
-Process Mimic Same package name, different cert/hash Process freeze, memory capture, hash analysis
-UI Hijack Overlay within 2s of credential event Block overlay, user prompt, screenshot capture
-Suspicious USB Unknown USB device + file activity Device block, file system scan
-Port Scanning Multiple connection attempts to different ports IP blocking, process termination
+· auth_system.py - Authentication and password management
+· privilege_manager.py - Root detection and privilege escalation
+· trip_engine.py - Rule evaluation and incident detection
+· decisions_engine.py - Action escalation and policy enforcement
+· anti_tamper_engine.py - System integrity monitoring
+· sensors_manager.py - Unified sensor data collection
 
----
+2.2 Sensor Suite (blux_modules/sensors/)
 
-## 3. Enhanced AI Security Plan — "Defending Against Hostile AIs"
+· network.py - Network connection monitoring
+· dns.py - DNS query analysis
+· process_lifecycle.py - Process tracking
+· filesystem.py - File system monitoring
+· hardware.py - USB/BT/charging detection
+· human_factors.py - User behavior analysis
+· permission.py - Permission change detection
 
-Principle: Break a hostile AI's effectiveness by destroying the reliability of its inputs and the economics of its computation — always legally, always on your turf.
+2.3 User Interfaces
 
-Strategy I — "Pull It Apart Into a Million Directions"
+· blux_guard_shell/ - Interactive shell menu system
+· blux_cli/ - Command-line interface with TUI widgets
+· initiate_cockpit.py - Graphical cockpit interface
+· blux_shell.py - Shell launcher wrapper
 
-· Enhanced Jitter: Deterministic timing variations with behavioral analysis
-· Proof-of-Work Throttles: Per-UID computational challenges
-· Advanced Honeypots: Deceptive file systems and network services
-· Human Validation Gates: Multi-factor confirmation for critical actions
+2.4 Anti-Tamper System (blux_modules/security/anti_tamper/)
 
-Strategy II — "EMP Metaphor" (Safe Isolation)
-
-· Circuit Breakers: Application-level air-gapping
-· Process Snapshotting: Freeze and analyze suspicious processes
-· Resource Throttling: CPU/QoS limits for suspect UIDs
-· Hardware Control: USB/BT radio management
-
-Enhanced Defensive Techniques
-
-· Behavioral Analysis: Pattern recognition across multiple sensors
-· Entropy Monitoring: System randomness and fingerprint detection
-· Integrity Verification: File hash checking and permission validation
-· Append-Only Audits: Tamper-resistant logging with cryptographic signing
+· nano_swarm/ - Distributed security monitoring
+· watchdog/ - System heartbeat and integrity checks
+· package_monitor.py - Package manager surveillance
+· selinux_monitor.py - SELinux policy monitoring
+· su_sentinel.py - Root access detection
 
 ---
 
-## 4. Enhanced Sensor Usage
+## 3. Quick Start
 
-Quick Start with Sensors
-
-```python
-from blux_modules.sensors import (
-    NetworkSensor, DNSSensor, ProcessSensor, 
-    FileSystemSensor, PermissionSensor, HardwareSensor, HumanFactorsSensor
-)
-
-# Initialize sensors
-network_sensor = NetworkSensor()
-fs_sensor = FileSystemSensor(watch_dirs=["/tmp", "/home/test"])
-process_sensor = ProcessSensor()
-
-# Start monitoring
-network_thread = network_sensor.start_monitoring()
-fs_observer, fs_thread = fs_sensor.start_monitoring()
-process_thread = process_sensor.start_monitoring()
-
-# Perform manual scans
-security_status = hardware_sensor.perform_security_scan()
-suspicious_files = permission_sensor.find_suspicious_permissions()
-
-# Stop monitoring when done
-network_sensor.stop_monitoring()
-fs_sensor.stop_monitoring()
-process_sensor.stop_monitoring()
-```
-
-Real-time Monitoring Features
-
-· Continuous Background Monitoring: All sensors run in separate threads
-· Configurable Intervals: Adjust monitoring frequency as needed
-· Start/Stop Control: Graceful monitoring management
-· Security Analysis: Built-in threat detection and risk assessment
-· Comprehensive Logging: Structured logging with security events
-
----
-
-## 5. Installation & Dependencies
-
-Requirements
+3.1 Installation
 
 ```bash
-# Install enhanced dependencies
+# Clone the repository
+git clone https://github.com/Outer-Void/blux-guard.git
+cd blux-guard
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-Enhanced Dependencies:
+3.2 First Run
 
-· psutil ~= 5.9.0 - Advanced system monitoring
-· watchdog ~= 4.0.0 - Real-time filesystem monitoring
-· cryptography ~= 46.0.3 - Security and signing
-· Plus existing UI and database dependencies
+```bash
+# Start with the interactive shell
+python3 blux_guard_shell/shell_menu.py
 
-Quickstart Test Path (Safe Sandbox)
+# Or use the graphical cockpit
+python3 initiate_cockpit.py
 
-1. Install Dependencies: pip install -r requirements.txt
-2. Configure Sensors: Edit sensor parameters as needed
-3. Test Individual Sensors: Run sensor monitoring in isolation
-4. Integrate with Trip Engine: Connect sensor outputs to rule evaluation
-5. Observe Security Events: Monitor logs for detected incidents
-6. Connect Companion Devices: BLE/NFC for physical authentication
+# Or use the CLI
+python3 blux_cli/blux.py status
+```
 
----
+3.3 Authentication
 
-## 6. Enhanced Governance & Ethics
-
-Defensive-Only Principle: No offensive payloads, strictly protective measures.
-
-Development Requirements:
-
-· Author GPG signatures on all commits
-· Comprehensive test logs and simulation results
-· Peer review with security expert sign-off
-· Security audit trails for all changes
-
-Operational Safeguards:
-
-· Private signing keys stored off-device
-· Physical ACK required for critical changes (BLE/NFC/manual)
-· No automatic evidence modification or deletion
-· All actions logged with cryptographic proof
+· First run will prompt for PIN setup
+· Use the same PIN across all interfaces
+· Emergency reset available via shell menu
 
 ---
 
-## 7. Updated Roadmap
+## 4. Trip Engine Examples
 
-Stage Goal Enhanced Features
-v0.1 Termux Trip Engine prototype Basic sensor framework
-v0.2 Enhanced Sensor Suite Real-time monitoring, threat detection
-v0.3 Honeypot + Canary endpoints Advanced deception techniques
-v0.4 BLE Companion + Physical Auth Hardware security integration
-v0.5 Kotlin VpnService Interceptor Network-level protection
-v0.6 Consensus Agent Coordinator Multi-device security coordination
-v1.0 Full BLUX Guard Operator Suite Enterprise-grade security platform
+Deterministic, time-bounded, and auditable
+
+Scenario Trip Condition Action
+Silent Exfil 10 external sockets to distinct IPs in 60s Block, snapshot, notify
+Mount Surprise SD mounted while locked & charging & idle 12h+ Read-only + checksum
+Privilege Creep New permission soon after unknown net conn Revert + quarantine
+Process Mimic Same pkg name, different cert/hash Freeze + capture
+UI Hijack Overlay within 2s of credential event Block overlay + prompt
+Cold-start Lateral Unknown AUTOSTART after reboot Block autostart until review
 
 ---
 
-## 8. Legal & Safety Notes
+## 5. AI Security Plan
 
-Important Restrictions:
+Principle: Break hostile AI effectiveness by destroying input reliability and computation economics.
 
-· ✅ Use only on devices you own or legally control
-· ✅ Keep forensics data encrypted and private
-· ✅ Test extensively on secondary hardware first
-· ✅ Never automatically modify or erase evidence
-· ✅ Maintain comprehensive audit trails
+Strategy I — "Pull It Apart"
 
-Enhanced Safety Features:
+· Deterministic jitter to break time-series features
+· Proof-of-Work throttles (per-UID PoW)
+· Honeypots and deceptive metadata
+· Never auto-confirm success — require human validation
 
-· Configurable monitoring intensity
-· Graceful degradation under load
-· Clear separation between monitoring and action
-· Operator approval gates for critical responses
+Strategy II — "EMP Metaphor"
+
+· Circuit breakers to air-gap radios or network routes
+· Freeze/snapshot suspect processes
+· Reduce CPU/QoS for suspect UIDs
+· All actions signed and operator-approved
+
+---
+
+## 6. Operational Scripts
+
+The scripts/ directory contains utilities for:
+
+· Security setup: setup_security.py, set_user_pin.sh
+· System maintenance: rotate_logs.sh, clean_temp.sh
+· Debugging: debug_env.sh, inspect_modules.py
+· Automation: daily_report.sh, schedule_checks.sh
+
+---
+
+## 7. Governance & Ethics
+
+Defensive-only. No offensive payloads. All commits and rule changes must include:
+
+· Author signature
+· Simulation or test logs
+· One reviewer sign-off
+
+Security Protocols:
+
+· Private signing keys must never reside on the same device
+· Critical changes require physical ACK (BLE/NFC or manual gesture)
+· Maintain an auditable signed changelog
+
+---
+
+## 8. Roadmap
+
+Stage Goal
+v0.1 Termux Trip Engine prototype
+v0.2 Honeypot + canary endpoint
+v0.3 BLE companion listener
+v0.4 Kotlin VpnService interceptor
+v0.5 Consensus agent coordinator
+v1.0 Full BLUX Guard operator suite
+
+---
+
+## 9. Legal & Safety
+
+· ✅ Works only on devices you own or control
+· ✅ Forensics data remains private and encrypted
+· ✅ Always test on secondary hardware first
+· ✅ Never modify or erase evidence automatically
 
 ---
 
 ## Getting Help
 
-· Documentation: Check docs/ directory for detailed guides
-· Issue Tracking: Report bugs and feature requests
-· Security Concerns: Follow responsible disclosure protocols
+· Check individual module docstrings for usage
+· Review scripts/ for operational utilities
+· Use the interactive shell for guided operation
 
-Remember: BLUX Guard is a defensive security system designed to protect your own devices through transparent, auditable monitoring and containment.
+BLUX Guard Doctrine — Building walls that respect your hunger and deny the pack.
+
+
