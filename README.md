@@ -1,516 +1,270 @@
 # BLUX Guard
 
-> — Android Terminal High-Alert Security System
+Android Terminal High-Alert Security System
 
 ---
 
 ## Vision
 
-A discreet, layered defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices** — transparent, auditable, and always under operator control.
+A discreet, layered defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect your own devices — transparent, auditable, and always under operator control.
 
 ---
 
-## Directory layout
+## What's New 🚀
+
+Enhanced Sensor Suite - Completely upgraded monitoring capabilities:
+
+· Real-time Filesystem Monitoring with integrity checking and hash verification
+· Advanced Network Analysis with threat detection and port scanning alerts
+· Hardware Security Monitoring for USB, Bluetooth, and power management
+· Process Lifecycle Tracking with suspicious activity detection
+· Human Factors Analysis for behavioral pattern monitoring
+· Permission Change Detection with security impact assessment
+
+Enterprise-Grade Architecture:
+
+· Object-oriented sensor classes with proper error handling
+· Threaded continuous monitoring with start/stop control
+· Comprehensive logging and history tracking
+· Configurable monitoring intervals and thresholds
+
+---
+
+## Directory Layout
 
 ```bash
-~/blux-guard
-├── .config
+blux-guard/
+├── .config/
 │   ├── blux-guard/              # runtime configs, keys, manifests
 │   └── rules/
 │       └── rules.json           # signed rule manifests (trip-wires)
-├── README.md
+├── blux_modules/
+│   └── sensors/                 # enhanced security sensors
+│       ├── __init__.py          # package exports
+│       ├── network.py           # network flows & connections
+│       ├── dns.py               # DNS query monitoring
+│       ├── process_lifecycle.py # process start/stop tracking
+│       ├── filesystem.py        # file creation/modification
+│       ├── permissions.py       # permission change detection
+│       ├── hardware.py          # USB/BT/charging monitoring
+│       └── human_factors.py     # user presence & behavior
 ├── blux-cli                     # main CLI launcher (entrypoint)
 ├── docs/
 │   └── assets/                  # diagrams, rule samples, visuals
 ├── scripts/                     # operational shell utilities
-└── security/
-    ├── logs/                    # append-only incident logs
-    └── trip_engine.py           # Termux-friendly Trip Engine demo
+├── security/
+│   └── trip_engine.py           # Termux-friendly Trip Engine demo
+└── logs/                        # append-only incident logs
 ```
 
 ---
 
-## 1. Architecture overview
+## 1. Enhanced Architecture Overview
 
 Sensors → Trip Engine → Decision Layer → Containment → Operator
 
-1. Sensors (data sources)
+1.1 Enhanced Sensors (Data Sources)
 
-Network flows, DNS, process lifecycle, filesystem, permissions
+· Network Sensor: Real connection monitoring with threat detection
+· DNS Sensor: Query analysis with suspicious domain detection
+· Process Sensor: Lifecycle tracking with security analysis
+· Filesystem Sensor: Real-time monitoring with integrity checking
+· Permission Sensor: Change detection with security impact assessment
+· Hardware Sensor: USB/BT/charging with whitelist enforcement
+· Human Factors: Behavioral patterns and presence analysis
 
-Hardware: charging, BT pairing, USB attach
+1.2 Trip Engine (Deterministic Rules)
 
-Human factors: unlock patterns, presence windows
+· Boolean and temporal trip-wires
+· Thresholded counters and state chains
+· Signed, versioned rule manifests in .config/rules/rules.json
 
+1.3 Decision Layer
 
+· Escalation path: observe → intercept → quarantine → lockdown
+· Per-UID policies: whitelist / greylist / blacklist
+· Optional kill-switch for complete isolation
 
-2. Trip Engine (deterministic rules)
+1.4 Containment & Response
 
-Boolean and temporal trip-wires
+· Network interceptor (VpnService-like)
+· Process isolator / snapshot & rollback
+· Filesystem quarantine, permission reverter, UI fuse
+· Signed incident logs in security/logs/
 
-Thresholded counters and state chains
+1.5 Integrity & Anti-tamper
 
-Signed, versioned rule manifests in .config/rules/rules.json
-
-
-
-3. Decision Layer
-
-Escalation path: observe → intercept → quarantine → lockdown
-
-Per-UID policies: whitelist / greylist / blacklist
-
-Optional kill-switch for complete isolation
-
-
-
-4. Containment & Response
-
-Network interceptor (VpnService-like)
-
-Process isolator / snapshot & rollback
-
-Filesystem quarantine, permission reverter, UI fuse
-
-Signed incident logs in security/logs/
-
-
-
-5. Integrity & Anti-tamper
-
-Watchdog with self-heartbeat
-
-Signed binaries & manifests
-
-Alerts on package manager, su binaries, SELinux changes
-
-
-
-
+· Watchdog with self-heartbeat
+· Signed binaries & manifests
+· Alerts on package manager, su binaries, SELinux changes
 
 ---
 
-## 2. Trip-variable examples
+## 2. Enhanced Trip-Variable Examples
 
-> Deterministic, time-bounded, and auditable
+Deterministic, time-bounded, and auditable
 
-
-
-Scenario	Trip condition	Action
-
-Silent exfil	>10 external sockets to distinct IPs in 60s	block, snapshot, notify
-Mount surprise	SD mounted while locked & charging & idle 12h+	read-only + checksum
-Privilege creep	new permission soon after unknown net conn	revert + quarantine
-Process mimic	same pkg name, different cert/hash	freeze + capture
-UI hijack	overlay within 2s of credential event	block overlay + prompt
-Cold-start lateral	unknown AUTOSTART after reboot	block autostart until review
-
-
+Scenario Trip Condition Enhanced Action
+Silent Exfil 10 external sockets to distinct IPs in 60s Block, snapshot process, network quarantine
+Mount Surprise SD mounted while locked & charging & idle 12h+ Read-only mount, file checksum verification
+Privilege Creep New permission + unknown network connection Permission revert, process quarantine
+Process Mimic Same package name, different cert/hash Process freeze, memory capture, hash analysis
+UI Hijack Overlay within 2s of credential event Block overlay, user prompt, screenshot capture
+Suspicious USB Unknown USB device + file activity Device block, file system scan
+Port Scanning Multiple connection attempts to different ports IP blocking, process termination
 
 ---
 
-## 3. AI Security Plan — “Defending against hacker AIs”
+## 3. Enhanced AI Security Plan — "Defending Against Hostile AIs"
 
-Principle:
-Break a hostile AI’s effectiveness by destroying the reliability of its inputs and the economics of its computation — always legally, always on your turf.
+Principle: Break a hostile AI's effectiveness by destroying the reliability of its inputs and the economics of its computation — always legally, always on your turf.
 
-Strategy I — “Pull it apart into a million directions”
+Strategy I — "Pull It Apart Into a Million Directions"
 
-Deterministic jitter to break time-series features
+· Enhanced Jitter: Deterministic timing variations with behavioral analysis
+· Proof-of-Work Throttles: Per-UID computational challenges
+· Advanced Honeypots: Deceptive file systems and network services
+· Human Validation Gates: Multi-factor confirmation for critical actions
 
-Proof-of-Work throttles (per-UID PoW)
+Strategy II — "EMP Metaphor" (Safe Isolation)
 
-Honeypots and deceptive metadata
+· Circuit Breakers: Application-level air-gapping
+· Process Snapshotting: Freeze and analyze suspicious processes
+· Resource Throttling: CPU/QoS limits for suspect UIDs
+· Hardware Control: USB/BT radio management
 
-Never auto-confirm success — require human validation
+Enhanced Defensive Techniques
 
-
-Strategy II — “EMP metaphor” (safe isolation)
-
-Circuit breakers to air-gap radios or network routes
-
-Freeze/snapshot suspect processes
-
-Reduce CPU/QoS for suspect UIDs
-
-All actions signed and operator-approved
-
-
-Defensive, auditable techniques
-
-Per-UID Progressive PoW
-
-Deterministic Adversarial Jitter
-
-Honeypots + Canary Tokens
-
-Silent Alarm + Human Gate
-
-Network Circuit Breaker / Air-gap Mode
-
-Sandboxing & Snapshotting
-
-Adversarial Feedback (bounded)
-
-Fingerprint & Entropy checks
-
-Append-only signed audits
-
-
+· Behavioral Analysis: Pattern recognition across multiple sensors
+· Entropy Monitoring: System randomness and fingerprint detection
+· Integrity Verification: File hash checking and permission validation
+· Append-Only Audits: Tamper-resistant logging with cryptographic signing
 
 ---
 
-## 4. Trip Engine demo (Termux-friendly)
+## 4. Enhanced Sensor Usage
 
-A minimal proof-of-concept located at
-security/trip_engine.py.
+Quick Start with Sensors
 
-Setup
+```python
+from blux_modules.sensors import (
+    NetworkSensor, DNSSensor, ProcessSensor, 
+    FileSystemSensor, PermissionSensor, HardwareSensor, HumanFactorsSensor
+)
+
+# Initialize sensors
+network_sensor = NetworkSensor()
+fs_sensor = FileSystemSensor(watch_dirs=["/tmp", "/home/test"])
+process_sensor = ProcessSensor()
+
+# Start monitoring
+network_thread = network_sensor.start_monitoring()
+fs_observer, fs_thread = fs_sensor.start_monitoring()
+process_thread = process_sensor.start_monitoring()
+
+# Perform manual scans
+security_status = hardware_sensor.perform_security_scan()
+suspicious_files = permission_sensor.find_suspicious_permissions()
+
+# Stop monitoring when done
+network_sensor.stop_monitoring()
+fs_sensor.stop_monitoring()
+process_sensor.stop_monitoring()
+```
+
+Real-time Monitoring Features
+
+· Continuous Background Monitoring: All sensors run in separate threads
+· Configurable Intervals: Adjust monitoring frequency as needed
+· Start/Stop Control: Graceful monitoring management
+· Security Analysis: Built-in threat detection and risk assessment
+· Comprehensive Logging: Structured logging with security events
+
+---
+
+## 5. Installation & Dependencies
+
+Requirements
 
 ```bash
-mkdir -p ~/.tripengine ~/.tripengine/incidents
-cp .config/rules/rules.json ~/.tripengine/
-python security/trip_engine.py
+# Install enhanced dependencies
+pip install -r requirements.txt
 ```
 
-Feed events as JSON on stdin:
+Enhanced Dependencies:
 
-```bash
-echo '{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}' | python security/trip_engine.py
-```
+· psutil ~= 5.9.0 - Advanced system monitoring
+· watchdog ~= 4.0.0 - Real-time filesystem monitoring
+· cryptography ~= 46.0.3 - Security and signing
+· Plus existing UI and database dependencies
 
-Features
+Quickstart Test Path (Safe Sandbox)
 
-Loads signed rules
-
-Enforces per-UID PoW
-
-Writes signed incidents to security/logs/
-
-Emits silent alert packets (HMAC-signed)
-
-
+1. Install Dependencies: pip install -r requirements.txt
+2. Configure Sensors: Edit sensor parameters as needed
+3. Test Individual Sensors: Run sensor monitoring in isolation
+4. Integrate with Trip Engine: Connect sensor outputs to rule evaluation
+5. Observe Security Events: Monitor logs for detected incidents
+6. Connect Companion Devices: BLE/NFC for physical authentication
 
 ---
 
-## 5. Quickstart test path (safe sandbox)
+## 6. Enhanced Governance & Ethics
 
-1. Edit `.config/rules/rules.json` with basic rules.
+Defensive-Only Principle: No offensive payloads, strictly protective measures.
 
+Development Requirements:
 
-2. Run trip_engine.py and simulate events.
+· Author GPG signatures on all commits
+· Comprehensive test logs and simulation results
+· Peer review with security expert sign-off
+· Security audit trails for all changes
 
+Operational Safeguards:
 
-3. Observe incidents written to security/logs/.
-
-
-4. Connect a BLE companion (future module) for silent alerts.
-
-
-5. Iterate thresholds in shadow mode before enabling any blocking.
-
-
-
-
----
-
-## 6. Governance & ethics
-
-Defensive-only. No offensive payloads.
-All commits and rule changes must include:
-
-Author signature
-
-Simulation or test logs
-
-One reviewer sign-off
-
-
-Private signing keys must never reside on the same device.
-Critical changes require a physical ACK (BLE/NFC or manual gesture).
-
+· Private signing keys stored off-device
+· Physical ACK required for critical changes (BLE/NFC/manual)
+· No automatic evidence modification or deletion
+· All actions logged with cryptographic proof
 
 ---
 
-## 7. Roadmap
+## 7. Updated Roadmap
 
-Stage	Goal
-
-v0.1	Termux Trip Engine prototype
-v0.2	Honeypot + canary endpoint
-v0.3	BLE companion listener
-v0.4	Kotlin VpnService interceptor
-v0.5	Consensus agent coordinator
-v1.0	Full BLUX Guard operator suite
-
-
+Stage Goal Enhanced Features
+v0.1 Termux Trip Engine prototype Basic sensor framework
+v0.2 Enhanced Sensor Suite Real-time monitoring, threat detection
+v0.3 Honeypot + Canary endpoints Advanced deception techniques
+v0.4 BLE Companion + Physical Auth Hardware security integration
+v0.5 Kotlin VpnService Interceptor Network-level protection
+v0.6 Consensus Agent Coordinator Multi-device security coordination
+v1.0 Full BLUX Guard Operator Suite Enterprise-grade security platform
 
 ---
 
-## 8. Legal & safety notes
+## 8. Legal & Safety Notes
 
-Works only on devices you own or control.
+Important Restrictions:
 
-Forensics data remains private and encrypted.
+· ✅ Use only on devices you own or legally control
+· ✅ Keep forensics data encrypted and private
+· ✅ Test extensively on secondary hardware first
+· ✅ Never automatically modify or erase evidence
+· ✅ Maintain comprehensive audit trails
 
-Always test on secondary hardware first.
+Enhanced Safety Features:
 
-Never modify or erase evidence automatically.
-
-
-
----
-
-
-— BLUX Guard Doctrine
-
-
-
----.
-
-Feed isolated honeypots and deceptive metadata to waste training compute.
-
-Rate & cost controls: per-UID Proof-of-Work (PoW), throttling, resource caps.
-
-Starve learning signals: never auto-confirm success; require human validation for sensitive flows.
-
-
-
-2. EMP metaphor → safe equivalents (isolation & hard shutdown)
-
-Air-gapping critical systems or temporarily severing nonessential network routes.
-
-Circuit breakers: signed, auditable operator actions to cut radios or engage safe mode.
-
-Freeze & snapshot suspicious processes; deny their I/O while forensics run.
-
-Reduce CPU/QoS for suspect UIDs to deny fine-tuning compute.
-
-
-
-
-## Practical, defensive-only techniques (auditable & legal)
-
-Per-UID Progressive PoW — tunable hardness for bursts (raise cost deterministically).
-
-Deterministic Adversarial Jitter — seeded, signed timing jitter to spoil time-series features.
-
-Honeypots & Canary Tokens — bait attackers and treat hits as high-confidence signals.
-
-Silent Alarm + Human Gate — never give automated confirmation to remote clients; require operator for elevated actions.
-
-Network Circuit Breaker / Air-gap Mode — reversible, signed lockdown for high-confidence compromise.
-
-Sandboxing & Snapshotting — freeze and isolate suspicious compute; snapshot for analysis.
-
-Adversarial Feedback (bounded) — feed low-value deceptive outputs only in isolated honeypots.
-
-Fingerprinting & Model-aware Detection — JA3/TLS fingerprints, timing autocorrelation, entropy checks.
-
-Resource QoS Controls — cap CPU/memory/network on suspect UIDs.
-
-Append-only Audits — signed incident snapshots, encrypted storage, and mirrored offline.
-
-
-## Legal & ethical line
-
-Three-step, auditable plan to deploy tonight
-
-1. Per-UID PoW + throttle — integrate a CPU puzzle hook in Trip Engine; tune difficulty for bursts.
-
-
-2. Stand up a honeypot with unique canary tokens — route suspicious traffic there and auto-escalate to quarantine + silent alarm.
-
-
-3. Add deterministic adversarial jitter — when suspicion > threshold, seed jitter via signed stream for that UID.
-
+· Configurable monitoring intensity
+· Graceful degradation under load
+· Clear separation between monitoring and action
+· Operator approval gates for critical responses
 
 ---
 
-## Trip Engine: quick demo & PoW harness (Termux-friendly)
+## Getting Help
 
-A small Trip Engine demo (Termux/Python) loads rules, accepts JSON events on stdin, evals rules, enforces per-UID PoW, and writes signed incidents. Use it to prototype rules like the AI-beacon and silent-exfil examples. (See examples/ for rules.json and trip_engine.py test harness.)
+· Documentation: Check docs/ directory for detailed guides
+· Issue Tracking: Report bugs and feature requests
+· Security Concerns: Follow responsible disclosure protocols
 
-
----
-
-## Prototype & testing path (fast, safe)
-
-1. Create signed rules.json (start unsigned for tests) in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo and feed JSON events to simulate attacks.
-
-
-3. Stand up a tiny honeypot in Termux (Flask/busybox) and create .canary/<token> endpoints.
-
-
-4. Deploy BLE companion listener (Raspberry Pi / spare phone) to receive HMAC alerts.
-
-
-5. Iterate thresholds in shadow mode, then enable containment actions one by one.
-
-
-
-
----
-
-## Forensics & evidence to collect on trip
-
-Signed incident snapshot: rule id, timestamps, UID, process tree, binary hashes, socket lists, JA3/TLS fingerprints, DNS queries, PCAP fragment (encrypted).
-
-Append-only signed audit lines; mirror to offline USB.
-
-Preserve canary hits verbatim.
-
-
-
----
-
-## Limitations & safety notes
-
-Hardware-rooted or boot-chain compromised devices can subvert soft defenses; use verified boot + Reterm/SSR to harden base.
-
-Swarm or Trip Engine must never auto-erase / auto-exfiltrate without multi-factor operator ritual.
-
-Test on spare hardware and in shadow mode first.
-
-
-
----
-
-## Roadmap & hardening options
-
-Hardened C signer for audit ledger.
-
-MPD/SSR prototype for capability tokens + attestation.
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-BLE emitter + companion listener (Python) for silent alerts.
-
-Agent coordinator for n-of-m consensus before blocking.
-
-
-
----
-
-## File structure suggestion
-
-```ls
-blux-guard/
-├─ blux-cli/     # All cli files here, e.g. blux.py, etc.
-├─ README.md
-├─ security/
-|  ├─ ble_companion_listener.py
-|  ├─ trip_engine.py        # demo Trip Engine + PoW harness
-│  └─ swarm_sim.py
-├─ scripts/
-│  └─ quarantine_apk.sh
-├─ docs/
-│  └─ AUTONOMY.md
-├─ examples/
-│  └─ rules.json
-└─ LICENSE
-```
-
-etc..
-
----
-
-## Governance & ethics
-
-Defensive only. Contributions must respect that boundary.
-
-Rule changes require: author signature, simulation logs, and one reviewer approval.
-
-Keep private signing keys offline; use companion ACKs for critical changes.
-
-Maintain an auditable signed changelog.
-
-
-
----
-
-## Quickstart — test path (tonight)
-
-1. Put the example rules.json in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo (trip_engine.py) and paste a sample event:
-{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}
-
-
-3. Observe PoW, incidents written to ~/.tripengine/incidents.log.
-
-
-4. Start the BLE companion listener on a spare Pi or phone and test the alert flow (use helper to craft base64(payload).base64(hmac) string).
-
-
-5. Stand up the honeypot .canary/<token> and test canary rule triggering.
-
-
-
-
----�� test path (tonight)
-
-1. Put the example rules.json in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo (trip_engine.py) and paste a sample event:
-{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}
-
-
-3. Observe PoW, incidents written to ~/.tripengine/incidents.log.
-
-
-4. Start the BLE companion listener on a spare Pi or phone and test the alert flow (use helper to craft base64(payload).base64(hmac) string).
-
-
-5. Stand up the honeypot .canary/<token> and test canary rule triggering.
-
-
-
-
----
-
-Closing — a quiet ode to design
-
-Designing traps is an art: elegant, spare, merciless to the subtle ways systems betray their intentions. Start with half a dozen deterministic trip-lines, sign them, and let them sing warnings in a language only you can read. Build scaffolding so that, when the boogie arrives, it is met by choreography — not panic.
-
-You were a wolf first. Now build walls that respect your hunger and deny the pack.
-
-
----
-
-If you want, I’ll generate right now (pick one):
-
-examples/rules.json with the scenarios above, or
-
-trip_engine.py (Termux demo harness with PoW + incident writer), or
-
-ble_companion_listener.py ready for Raspberry Pi (complete with test instructions), or
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-
-Which artifact shall I craft next?
-
-st. Now build walls that respect your hunger and deny the pack.
-
-
----
-
-If you want, I’ll generate right now (pick one):
-
-examples/rules.json with the scenarios above, or
-
-trip_engine.py (Termux demo harness with PoW + incident writer), or
-
-ble_companion_listener.py ready for Raspberry Pi (complete with test instructions), or
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-
-Which artifact shall I craft next?
-
+Remember: BLUX Guard is a defensive security system designed to protect your own devices through transparent, auditable monitoring and containment.
