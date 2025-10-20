@@ -7,7 +7,7 @@ Anti-Tamper Engine
 import threading
 from anti_tamper.watchdog import heartbeat
 from anti_tamper import package_monitor, su_sentinel, selinux_monitor
-from anti_tamper.nano_swarm import swarm_sim
+from .anti_tamper.nano_swarm import swarm_sim
 import subprocess
 
 def start_watchdog():
