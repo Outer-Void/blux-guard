@@ -245,9 +245,14 @@ class AuthSystem:
 
             elif hash_string.startswith("basic"):
                 try:
-                    _, salt, stored_hash = hash_string.split('$')
-                    computed_hash = hashlib.sha256((password + salt).encode('utf-8')).hexdigest()
-                    return hmac.compare_digest(computed_hash, stored_hash)
+                    # New format: basic$iterations$salt_hex$key_hex
+                    _, iterations, salt_hex, key_hex = hash_string.split('$')
+                    salt = bytes.fromhex(salt_hex)
+                    stored_key = bytes.fromhex(key_hex)
+                    computed_key = hashlib.pbkdf2_hmac(
+                        'sha256', password.encode('utf-8'), salt, int(iterations)
+                    )
+                    return hmac.compare_digest(computed_key, stored_key)
                 except (ValueError, KeyError) as e:
                     self.logger.error(f"Basic hash parsing error: {e}")
                     return False
