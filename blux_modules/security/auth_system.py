@@ -106,7 +106,7 @@ class AuthSystem:
                     if key not in config:
                         config[key] = default_config[key]
                         if key not in sensitive_keys:
-                            self.logger.warning(f"Missing key '{key}' in config. Using default value.")
+                            self.logger.warning("Missing non-sensitive configuration key in config. Using default value.")
 
             except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
                 print(f"Error loading config, using defaults: {e}")
@@ -190,13 +190,13 @@ class AuthSystem:
         return ph.hash(password)
 
     def _hash_password_basic(self, password: str) -> str:
-        """Fallback: Create a basic PBKDF2-HMAC-SHA256 hash (more secure than plain SHA256)"""
-        salt = secrets.token_bytes(16)
-        iterations = 100_000
-        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
-        salt_hex = salt.hex()
+        """Fallback: Use PBKDF2-HMAC-SHA256 for password hashing with random salt and sufficient iterations"""
+        salt = secrets.token_hex(16)
+        iterations = 100000
+        key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), iterations)
+        salt_hex = salt
         key_hex = key.hex()
-        return f"basic${iterations}${salt_hex}${key_hex}"
+        return f"{iterations}${salt_hex}${key_hex}"
 
     def verify_password(self, password: str, hash_string: str) -> bool:
         """Verify password against stored hash"""
