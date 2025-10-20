@@ -39,11 +39,11 @@ sys.path.insert(0, str(module_path))
 
 # BLUX Guard imports with error handling
 try:
-    from security.auth_system import AuthSystem  # Adjusted import
-    from security.privilege_manager import PrivilegeManager  # Adjusted import
+    from blux_modules.security.auth_system import AuthSystem  # Adjusted import
+    from blux_modules.security.privilege_manager import PrivilegeManager  # Adjusted import
 
     try:
-        from security.sensors_manager import get_sensor_status
+        from blux_modules.security.sensors_manager import get_sensor_status
 
         SENSORS_AVAILABLE = True
     except ImportError:
@@ -51,7 +51,7 @@ try:
         logger.warning("Sensors manager not available")
 
     try:
-        from security.trip_engine import get_decision_logs
+        from blux_modules.security.trip_engine import get_decision_logs
 
         DECISIONS_AVAILABLE = True
     except ImportError:
@@ -59,7 +59,7 @@ try:
         logger.warning("Trip engine not available")
 
     try:
-        from security.anti_tamper_engine import get_anti_tamper_status
+        from blux_modules.security.anti_tamper_engine import get_anti_tamper_status
 
         ANTITAMPER_AVAILABLE = True
     except ImportError:
@@ -67,7 +67,7 @@ try:
         logger.warning("Anti-tamper engine not available")
 
     try:
-        from security.contain_engine import execute_containment
+        from blux_modules.security.contain_engine import execute_containment
 
         CONTAINMENT_AVAILABLE = True
     except ImportError:
