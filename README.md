@@ -4,6 +4,53 @@
 
 ---
 
+## Enterprise Quick Start
+
+```bash
+# Install (venv recommended)
+python -m pip install -U pip
+pip install -e .
+
+# Start the daemon and cockpit
+bluxqd --host 0.0.0.0 --port 8000 &
+bluxq guard status
+bluxq guard tui --mode dev
+
+# Verify the environment
+bluxq guard self-check
+```
+
+### Telemetry & Reliability
+
+- JSONL audit log: `~/.config/blux-guard/logs/audit.jsonl`
+- Dev shell stream: `~/.config/blux-guard/logs/devshell.jsonl`
+- SQLite mirror: `~/.config/blux-guard/logs/telemetry.db`
+
+All writes are best-effort; if storage is unavailable the CLI continues running and emits a single
+degrade warning when `BLUX_GUARD_TELEMETRY_WARN=once`. Disable logging via
+`BLUX_GUARD_TELEMETRY=off` or relocate with `BLUX_GUARD_LOG_DIR=/custom/path`.
+
+### CLI Highlights
+
+- `bluxq guard status` — show telemetry paths and logging state.
+- `bluxq guard tui --mode dev` — launch the Developer Suite cockpit.
+- `bluxq guard self-check` — run configuration, telemetry, sandbox, and API validations.
+- `bluxq dev shell` — open a sandboxed PTY terminal.
+- Global `--debug`/`--verbose` flags surface detailed telemetry during troubleshooting.
+
+### Documentation Map
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — high-level component relationships.
+- [INSTALL.md](INSTALL.md) — platform-specific installation (Termux, Linux/WSL2, macOS, Windows).
+- [OPERATIONS.md](OPERATIONS.md) — runbook, telemetry toggles, lifecycle tasks.
+- [SECURITY.md](SECURITY.md) — threat model, doctrine enforcement, sandbox tiers.
+- [PRIVACY.md](PRIVACY.md) — telemetry contents and how to disable retention.
+- [CONFIGURATION.md](CONFIGURATION.md) — YAML schema and override guidance.
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — debug tips, CLI dependencies, storage fixes.
+- [SUPPORT.md](SUPPORT.md) — contact channels, support policy, and escalation paths.
+
+---
+
 ## Vision
 
 A discreet, layered defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices** — transparent, auditable, and always under operator control.
@@ -315,5 +362,284 @@ v1.0 Full BLUX Guard operator suite
 · Use the interactive shell for guided operation
 
 BLUX Guard Doctrine — Building walls that respect your hunger and deny the pack.
+
+
+
+---
+
+## Power Mode 2.0 Quick Start
+
+1. **Install**
+   ```bash
+   # recommended virtual environment
+   python -m pip install -U pip
+   pip install -e .
+   ```
+2. **Launch the daemon and cockpit**
+   ```bash
+   bluxqd &
+   bluxq guard status
+   bluxq guard tui --mode dev
+   ```
+3. **Developer workflows**
+   ```bash
+   bluxq dev init
+   bluxq dev shell
+   bluxq dev scan .
+   bluxq dev deploy --safe
+   ```
+4. **Fallbacks** — `initiate_cockpit.py` and the legacy CLI continue to operate unchanged.
+
+## Security Model & Doctrine Alignment
+
+- **User / Operator / Root (cA)** tiers remain enforced. Developer flows inherit doctrine checks before privileged actions.
+- All automation routes through the sandboxed PTY shell to respect containment boundaries.
+- Doctrine integrations surface alignment scores directly inside the cockpit and via the CLI.
+
+## Telemetry & Reliability
+
+BLUX Guard writes best-effort logs to:
+
+- `~/.config/blux-guard/logs/audit.jsonl`
+- `~/.config/blux-guard/logs/devshell.jsonl` (developer shell stream)
+- Optional mirror: `~/.config/blux-guard/logs/telemetry.db` (SQLite)
+
+If the directory is unwritable or SQLite is unavailable, logging **degrades silently** and the app **continues running**.
+
+Toggles:
+
+- `BLUX_GUARD_TELEMETRY=off` → disable telemetry writes
+- `BLUX_GUARD_TELEMETRY_WARN=once` → show a single degrade warning on stderr
+
+## Cross-Platform Notes
+
+- **Android / Termux** – installers configure aliases; telemetry lives under `$HOME/.config/blux-guard/logs`.
+- **WSL2 & Linux** – sandbox shell defaults to `/bin/bash`, Prometheus metrics export via `bluxqd`.
+- **macOS** – shell panel launches `/bin/zsh` while retaining doctrine validation.
+- **Windows** – PowerShell support via `COMSPEC`; telemetry paths expand to `%USERPROFILE%\.config\blux-guard\logs`.
+
+## Troubleshooting
+
+- **CLI reports `ModuleNotFoundError: typer`** – reinstall with `pip install -e .` to ensure dependencies.
+- **Permission denied writing logs** – create the telemetry directory manually or set `BLUX_GUARD_TELEMETRY=off`.
+- **SQLite locked or missing** – mirror is optional; the CLI continues using JSONL streams and emits a single degrade warning when enabled.
+- **Termux storage prompts** – run `termux-setup-storage` before launching to grant write access.
+
+BLUX Guard — the forge remains open, even when the pen runs dry.
+
+## Developer Suite Quick Start
+
+```bash
+# Install (venv recommended)
+python -m pip install -U pip
+pip install -e .
+
+# Start daemon & open cockpit
+bluxqd &
+bluxq guard status
+bluxq guard tui --mode dev
+```
+
+Telemetry is best-effort:
+
+- JSONL: `~/.config/blux-guard/logs/audit.jsonl`
+- Dev shell: `~/.config/blux-guard/logs/devshell.jsonl`
+- SQLite mirror (optional): `~/.config/blux-guard/logs/telemetry.db`
+
+To disable: `BLUX_GUARD_TELEMETRY=off`.
+
+## Documentation Map
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — module graph and platform matrix.
+- [INSTALL.md](INSTALL.md) — platform-specific install steps.
+- [OPERATIONS.md](OPERATIONS.md) — runbook for day-two operations.
+- [SECURITY.md](SECURITY.md) — threat model, doctrine enforcement, telemetry guarantees.
+- [PRIVACY.md](PRIVACY.md) — telemetry scope and retention controls.
+- [CONFIGURATION.md](CONFIGURATION.md) — YAML schema and overrides.
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — quick fixes for common issues.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and coding standards.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community expectations.
+- [SUPPORT.md](SUPPORT.md) — escalation paths and SLAs.
+- [ROADMAP.md](ROADMAP.md) — upcoming milestones.
+
+## Supported Python Versions
+
+The cockpit validates Python 3.9+ on startup. Supported interpreters: 3.9, 3.10, and 3.11. Upgrade the
+interpreter if you receive a startup warning.
+
+<!-- FILETREE:BEGIN -->
+<!-- generated; do not edit manually -->
+<details><summary><strong>Repository File Tree</strong> (click to expand)</summary>
+
+```text
+blux-guard/
+├── .github
+│   ├── workflows
+│   │   ├── ci.yml
+│   │   └── security.yml
+│   └── dependabot.yml
+├── blux_cli
+│   ├── widgets
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_controls.py
+│   │   ├── blux_cockpit.css
+│   │   ├── cockpit_header_footer.py
+│   │   ├── decisions_view.py
+│   │   ├── dev_menu_tree.py
+│   │   ├── logs_view.py
+│   │   ├── network_monitor.py
+│   │   ├── node_data.json
+│   │   ├── process_monitor.py
+│   │   ├── scripts_view.py
+│   │   ├── sensors_dashboard.py
+│   │   └── tree.py
+│   ├── __init__.py
+│   ├── blux.py
+│   └── security_integration.py
+├── blux_guard
+│   ├── agents
+│   │   ├── __init__.py
+│   │   ├── common.py
+│   │   ├── linux_agent.py
+│   │   ├── mac_agent.py
+│   │   ├── termux_agent.py
+│   │   └── windows_agent.py
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── guardd.py
+│   │   ├── server.py
+│   │   └── stream.py
+│   ├── cli
+│   │   ├── __init__.py
+│   │   ├── bluxq.py
+│   │   └── README.md
+│   ├── config
+│   │   ├── __init__.py
+│   │   ├── default.yaml
+│   │   └── local.yaml
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── devsuite.py
+│   │   ├── doctrine_integration.py
+│   │   ├── engine.py
+│   │   ├── runtime.py
+│   │   ├── sandbox.py
+│   │   ├── selfcheck.py
+│   │   ├── telemetry.md
+│   │   └── telemetry.py
+│   ├── tui
+│   │   ├── __init__.py
+│   │   ├── audit_panel.py
+│   │   ├── dashboard.py
+│   │   ├── metrics_panel.py
+│   │   ├── README.md
+│   │   └── shell_panel.py
+│   └── __init__.py
+├── blux_guard_shell
+│   ├── __init__.py
+│   └── shell_menu.py
+├── blux_modules
+│   ├── security
+│   │   ├── anti_tamper
+│   │   │   ├── nano_swarm
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── swarm.css
+│   │   │   │   └── swarm_sim.py
+│   │   │   ├── watchdog
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── heartbeat.py
+│   │   │   ├── __init__.py
+│   │   │   ├── package_monitor.py
+│   │   │   ├── selinux_monitor.py
+│   │   │   └── su_sentinel.py
+│   │   ├── contain_respond
+│   │   │   ├── __init__.py
+│   │   │   ├── filesystem.py
+│   │   │   ├── logging.py
+│   │   │   ├── network_intercepter.py
+│   │   │   └── process_isolator.py
+│   │   ├── decision_layer
+│   │   │   ├── __init__.py
+│   │   │   ├── policies.json
+│   │   │   ├── policies.txt
+│   │   │   └── uid_policies.py
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_engine.py
+│   │   ├── auth_system.py
+│   │   ├── contain_engine.py
+│   │   ├── decisions_engine.py
+│   │   ├── privilege_manager.py
+│   │   ├── sensors_manager.py
+│   │   └── trip_engine.py
+│   ├── sensors
+│   │   ├── __init__.py
+│   │   ├── dns.py
+│   │   ├── filesystem.py
+│   │   ├── hardware.py
+│   │   ├── human_factors.py
+│   │   ├── network.py
+│   │   ├── permission.py
+│   │   ├── permissions.py
+│   │   └── process_lifecycle.py
+│   └── __init__.py
+├── examples
+│   ├── config.sample.yaml
+│   └── doctrine.sample.md
+├── scripts
+│   ├── __init__.py
+│   ├── auth_reset.py
+│   ├── check_root.sh
+│   ├── check_status.sh
+│   ├── clean_temp.sh
+│   ├── create_venv.sh
+│   ├── daily_report.sh
+│   ├── debug_env.sh
+│   ├── gen_filetree.py
+│   ├── initiate_cockpit.sh
+│   ├── inspect_modules.py
+│   ├── install_linux.sh
+│   ├── install_termux.sh
+│   ├── install_windows.ps1
+│   ├── reload_config.sh
+│   ├── restart.sh
+│   ├── root_workaround.sh
+│   ├── rotate_logs.sh
+│   ├── run_guard.sh
+│   ├── schedule_checks.sh
+│   ├── set_user_pin.sh
+│   ├── setup_env.sh
+│   ├── setup_security.py
+│   ├── unlock_system.sh
+│   ├── update_modules.sh
+│   └── update_readme_filetree.py
+├── tests
+│   └── test_cli.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .ruff.toml
+├── ARCHITECTURE.md
+├── blux_shell.py
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONFIGURATION.md
+├── CONTRIBUTING.md
+├── initiate_cockpit.py
+├── INSTALL.md
+├── LICENSE
+├── Makefile
+├── mypy.ini
+├── OPERATIONS.md
+├── PRIVACY.md
+├── pyproject.toml
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── ROADMAP.md
+├── SECURITY.md
+├── SUPPORT.md
+└── TROUBLESHOOTING.md
+```
+</details>
+<!-- FILETREE:END -->
 
 
