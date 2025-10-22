@@ -30,12 +30,7 @@ class ShellPanel(Static):
         if self.running:
             return
         self.running = True
-        telemetry.record_event(
-            "tui.shell.launch",
-            actor="tui",
-            payload={"command": command or "default"},
-            stream="devshell",
-        )
+        telemetry.record_event("tui.shell.launch", {"command": command or "default"})
         await sandbox.launch_interactive_shell(command)
         self.running = False
         self.update("Shell session ended")

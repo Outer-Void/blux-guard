@@ -29,11 +29,7 @@ def _load_doctrine() -> Dict[str, Any]:
 
 def ensure_doctrine_loaded() -> Dict[str, Any]:
     doctrine = _load_doctrine()
-    telemetry.record_event(
-        "doctrine.load",
-        actor="doctrine",
-        payload={"items": len(doctrine)},
-    )
+    telemetry.record_event("doctrine.load", {"items": len(doctrine)})
     return doctrine
 
 

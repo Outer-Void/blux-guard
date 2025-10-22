@@ -5,154 +5,69 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import pathlib
 import sqlite3
-import sys
-import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, AsyncIterator, Dict, Iterable, Optional
+from typing import Any, AsyncIterator, Dict, Iterable
 
-# Resolve the telemetry directory, allowing overrides for testing or custom deployments.
-_LOG_DIR = Path(
-    os.environ.get("BLUX_GUARD_LOG_DIR", Path.home() / ".config" / "blux-guard" / "logs")
-)
-_JSONL = _LOG_DIR / "audit.jsonl"
-_DEVJSONL = _LOG_DIR / "devshell.jsonl"
-_DB = _LOG_DIR / "telemetry.db"
-
-_warned_once: Dict[str, bool] = {"json": False, "sqlite": False, "dir": False}
-_lock = threading.Lock()
+_LOG_BASE = pathlib.Path(os.environ.get("BLUX_GUARD_LOG_DIR", pathlib.Path.home() / ".config" / "blux-guard" / "logs"))
+_AUDIT_LOG = _LOG_BASE / "audit.jsonl"
+_DEVSHELL_LOG = _LOG_BASE / "devshell.jsonl"
+_SQLITE_DB = _LOG_BASE / "telemetry.sqlite3"
 
 
-def _telemetry_enabled() -> bool:
-    """Return True when telemetry sinks should be active."""
-
-    return os.getenv("BLUX_GUARD_TELEMETRY", "on").lower() not in {
-        "0",
-        "off",
-        "false",
-        "no",
-    }
+def _ensure_dirs() -> None:
+    _LOG_BASE.mkdir(parents=True, exist_ok=True)
 
 
-def _warn_once(channel: str, message: str) -> None:
-    """Emit a single degrade warning to stderr per channel."""
-
-    if os.getenv("BLUX_GUARD_TELEMETRY_WARN", "once").lower() != "once":
-        return
-
-    if not _warned_once.get(channel):
-        _warned_once[channel] = True
-        print(f"[blux-guard] telemetry degrade: {message}", file=sys.stderr)
+def _append_jsonl(path: pathlib.Path, payload: Dict[str, Any]) -> None:
+    _ensure_dirs()
+    line = json.dumps(payload, sort_keys=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
 
 
-def _ensure_dirs() -> bool:
-    """Create the telemetry directory if possible."""
-
-    try:
-        _LOG_DIR.mkdir(parents=True, exist_ok=True)
-        return True
-    except Exception as exc:  # pragma: no cover - defensive
-        _warn_once("dir", f"cannot create log dir {_LOG_DIR}: {exc}")
-        return False
-
-
-def ensure_log_dir() -> bool:
-    """Public helper to prepare the telemetry directory."""
-
-    return _ensure_dirs()
+def _ensure_sqlite() -> None:
+    _ensure_dirs()
+    with sqlite3.connect(_SQLITE_DB) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                ts REAL NOT NULL,
+                channel TEXT NOT NULL,
+                payload TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
 
 
-def _safe_jsonl_write(path: Path, obj: Dict[str, Any]) -> None:
-    try:
-        with _lock:
-            with path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(obj, ensure_ascii=False) + "\n")
-    except Exception as exc:  # pragma: no cover - defensive
-        _warn_once("json", f"jsonl write failed ({path}): {exc}")
+def record_event(channel: str, payload: Dict[str, Any]) -> None:
+    """Persist a telemetry event across JSONL and SQLite sinks."""
 
-
-def _safe_sqlite_write(table: str, obj: Dict[str, Any]) -> None:
-    try:
-        with _lock:
-            conn = sqlite3.connect(_DB)
-            try:
-                conn.execute(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS {table} (
-                        ts REAL,
-                        level TEXT,
-                        actor TEXT,
-                        action TEXT,
-                        stream TEXT,
-                        payload TEXT
-                    )
-                    """
-                )
-                conn.execute(
-                    f"""
-                    INSERT INTO {table} (ts, level, actor, action, stream, payload)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        obj.get("ts"),
-                        obj.get("level"),
-                        obj.get("actor"),
-                        obj.get("action"),
-                        obj.get("stream"),
-                        json.dumps(obj.get("payload", {}), ensure_ascii=False),
-                    ),
-                )
-                conn.commit()
-            finally:
-                conn.close()
-    except Exception as exc:  # pragma: no cover - defensive
-        _warn_once("sqlite", f"sqlite write failed ({_DB}): {exc}")
-
-
-def record_event(
-    action: str,
-    level: str = "info",
-    actor: Optional[str] = None,
-    payload: Optional[Dict[str, Any]] = None,
-    *,
-    stream: str = "audit",
-) -> None:
-    """Best-effort event recorder that never raises."""
-
-    if not _telemetry_enabled():
-        return
-
-    payload = payload or {}
-    ensure_log_dir()
-
-    obj = {
-        "ts": time.time(),
-        "level": level,
-        "actor": actor or "local",
-        "action": action,
-        "payload": payload,
-        "stream": stream,
-        "channel": action,
-    }
-
-    path = _JSONL if stream == "audit" else _DEVJSONL
-    _safe_jsonl_write(path, obj)
-    _safe_sqlite_write("events", obj)
+    timestamp = time.time()
+    body = {"ts": timestamp, "channel": channel, **payload}
+    _append_jsonl(_AUDIT_LOG if channel.startswith("audit") else _DEVSHELL_LOG, body)
+    _ensure_sqlite()
+    with sqlite3.connect(_SQLITE_DB) as conn:
+        conn.execute(
+            "INSERT INTO events (ts, channel, payload) VALUES (?, ?, ?)",
+            (timestamp, channel, json.dumps(payload, sort_keys=True)),
+        )
+        conn.commit()
 
 
 async def collect_status() -> Dict[str, Any]:
     """Return a simplified status snapshot for CLI consumption."""
 
-    ensure_log_dir()
+    _ensure_dirs()
     return {
-        "log_dir": str(_LOG_DIR),
-        "audit_log": str(_JSONL),
-        "devshell_log": str(_DEVJSONL),
-        "sqlite_db": str(_DB),
-        "telemetry_enabled": _telemetry_enabled(),
+        "log_dir": str(_LOG_BASE),
+        "audit_log": str(_AUDIT_LOG),
+        "devshell_log": str(_DEVSHELL_LOG),
+        "sqlite_db": str(_SQLITE_DB),
     }
 
 
@@ -184,11 +99,7 @@ async def iter_prometheus_metrics() -> AsyncIterator[str]:
     """Yield Prometheus metric strings asynchronously."""
 
     metrics = [
-        Metric(
-            name="blux_guard_heartbeat",
-            value=time.time(),
-            description="Wall clock timestamp",
-        ),
+        Metric(name="blux_guard_heartbeat", value=time.time(), description="Wall clock timestamp"),
     ]
     for metric in metrics:
         yield metric.to_prometheus()
@@ -201,25 +112,22 @@ def export_prometheus() -> str:
     loop = asyncio.get_event_loop()
     if loop.is_running():
         raise RuntimeError("export_prometheus must not be called from a running loop")
-
     metrics: list[str] = []
-
     async def _collect() -> None:
         async for chunk in iter_prometheus_metrics():
             metrics.append(chunk)
-
     loop.run_until_complete(_collect())
     return "\n".join(metrics)
 
 
 @contextmanager
-def scoped_event(action: str, **payload: Any) -> Iterable[None]:
+def scoped_event(channel: str, **payload: Any) -> Iterable[None]:
     """Context manager that automatically records start/stop events."""
 
     start_payload = {**payload, "phase": "start"}
-    record_event(action, payload=start_payload)
+    record_event(channel, start_payload)
     try:
         yield
     finally:
         end_payload = {**payload, "phase": "end"}
-        record_event(action, payload=end_payload)
+        record_event(channel, end_payload)

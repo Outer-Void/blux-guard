@@ -31,11 +31,7 @@ async def register(socket: WebSocket) -> None:
     try:
         while True:
             data = await socket.receive_text()
-            telemetry.record_event(
-                "api.stream",
-                actor="api",
-                payload={"message": data},
-            )
+            telemetry.record_event("api.stream", {"message": data})
             for client in list(_clients):
                 if client is not socket:
                     await client.send_text(data)

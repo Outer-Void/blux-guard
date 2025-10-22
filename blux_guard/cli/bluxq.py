@@ -31,14 +31,6 @@ def main() -> None:
     The callback is intentionally empty so Typer can manage sub-commands.
     """
 
-    if not telemetry.ensure_log_dir():
-        telemetry.record_event(
-            "startup.degrade",
-            level="warn",
-            actor="cli",
-            payload={"component": "bluxq", "reason": "log_dir_unavailable"},
-        )
-
 
 def _ensure_event_loop() -> asyncio.AbstractEventLoop:
     try:

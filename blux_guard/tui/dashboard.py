@@ -57,10 +57,6 @@ class DashboardApp(App[Any]):
 
 
 async def run_dashboard(mode: str = "secure") -> None:
-    telemetry.record_event(
-        "tui.launch",
-        actor="tui",
-        payload={"mode": mode},
-    )
+    telemetry.record_event("tui.launch", {"mode": mode})
     app = DashboardApp(mode=mode)
     await app.run_async()

@@ -14,7 +14,7 @@ class TermuxAgent:
         data = {
             "storage": shutil.disk_usage("/").free // (1024 * 1024),
         }
-        telemetry.record_event("agent.termux", actor="agent", payload=data)
+        telemetry.record_event("agent.termux", data)
         return data
 
 

@@ -14,14 +14,10 @@ dependencies = [
     "cryptography",
     "textual>=0.62.0",
     "textual-dev",
-    "rich>=13.7.0",
+    "rich",
     "pysqlite3",
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.30.0",
-    "typer>=0.12.3",
-    "psutil>=5.9.8",
-    "sqlite-utils>=3.36",
-    "prometheus-client>=0.20.0",
+    "fastapi",
+    "uvicorn"
 ]
 
 [project.scripts]

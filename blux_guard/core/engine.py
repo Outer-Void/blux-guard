@@ -17,17 +17,9 @@ def enforce(channel: str) -> Callable[[F], F]:
     def decorator(func: F) -> F:
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            telemetry.record_event(
-                f"policy.{channel}",
-                actor="policy",
-                payload={"phase": "before"},
-            )
+            telemetry.record_event(f"policy.{channel}", {"phase": "before"})
             result = await func(*args, **kwargs)
-            telemetry.record_event(
-                f"policy.{channel}",
-                actor="policy",
-                payload={"phase": "after"},
-            )
+            telemetry.record_event(f"policy.{channel}", {"phase": "after"})
             return result
 
         return wrapper  # type: ignore[return-value]

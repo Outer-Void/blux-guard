@@ -25,26 +25,14 @@ async def _poll_agents() -> None:
     agent = factory() if factory else None
     while True:
         if agent and hasattr(agent, "collect"):
-            telemetry.record_event(
-                "daemon.poll",
-                actor="daemon",
-                payload=getattr(agent, "collect")(),
-            )
+            telemetry.record_event("daemon.poll", getattr(agent, "collect")())
         await asyncio.sleep(30)
 
 
 def start() -> None:
     """Entry point for the ``bluxqd`` console script."""
 
-    if not telemetry.ensure_log_dir():
-        telemetry.record_event(
-            "startup.degrade",
-            level="warn",
-            actor="daemon",
-            payload={"component": "bluxqd", "reason": "log_dir_unavailable"},
-        )
-
-    telemetry.record_event("daemon.start", actor="daemon", payload={})
+    telemetry.record_event("daemon.start", {})
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
