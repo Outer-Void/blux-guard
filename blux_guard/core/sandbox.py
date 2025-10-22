@@ -39,6 +39,7 @@ async def launch_interactive_shell(command: Optional[str] = None) -> None:
         payload={"shell": shell, "mode": "interactive"},
         stream="devshell",
     )
+    telemetry.record_event("sandbox.shell", {"shell": shell, "mode": "interactive"})
     process = await asyncio.create_subprocess_exec(
         shell,
         stdin=None,
@@ -64,5 +65,6 @@ async def run_command(command: Iterable[str] | str) -> int:
         payload={"command": display},
         stream="devshell",
     )
+    telemetry.record_event("sandbox.exec", {"command": display})
     process = await asyncio.create_subprocess_exec(*args)
     return await process.wait()

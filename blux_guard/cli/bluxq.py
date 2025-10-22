@@ -15,6 +15,7 @@ except Exception:  # pragma: no cover - defensive import guard
     legacy_cli = None
 
 from blux_guard.core import devsuite, runtime, sandbox, telemetry
+from blux_guard.core import devsuite, sandbox, telemetry
 from blux_guard.tui import dashboard
 
 app = typer.Typer(help="BLUX Guard Developer Suite (Quantum namespace)")

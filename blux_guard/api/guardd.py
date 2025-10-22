@@ -9,6 +9,7 @@ import uvicorn
 
 from ..agents import common, linux_agent, mac_agent, termux_agent, windows_agent
 from ..core import runtime, telemetry
+from ..core import telemetry
 from .server import app
 
 _AGENT_MAP = {
@@ -30,6 +31,7 @@ async def _poll_agents() -> None:
                 actor="daemon",
                 payload=getattr(agent, "collect")(),
             )
+            telemetry.record_event("daemon.poll", getattr(agent, "collect")())
         await asyncio.sleep(30)
 
 
@@ -46,6 +48,7 @@ def start() -> None:
         )
 
     telemetry.record_event("daemon.start", actor="daemon", payload={})
+    telemetry.record_event("daemon.start", {})
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

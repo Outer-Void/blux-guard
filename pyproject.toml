@@ -40,6 +40,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["ruff", "mypy", "pytest"]
 
+    "rich",
+    "pysqlite3",
+    "fastapi",
+    "uvicorn"
+]
+
 [project.scripts]
 bluxq = "blux_guard.cli.bluxq:app"
 bluxqd = "blux_guard.api.guardd:start"
