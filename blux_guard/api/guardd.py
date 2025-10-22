@@ -8,6 +8,7 @@ from typing import Callable
 import uvicorn
 
 from ..agents import common, linux_agent, mac_agent, termux_agent, windows_agent
+from ..core import runtime, telemetry
 from ..core import telemetry
 from .server import app
 
@@ -25,6 +26,11 @@ async def _poll_agents() -> None:
     agent = factory() if factory else None
     while True:
         if agent and hasattr(agent, "collect"):
+            telemetry.record_event(
+                "daemon.poll",
+                actor="daemon",
+                payload=getattr(agent, "collect")(),
+            )
             telemetry.record_event("daemon.poll", getattr(agent, "collect")())
         await asyncio.sleep(30)
 
@@ -32,6 +38,16 @@ async def _poll_agents() -> None:
 def start() -> None:
     """Entry point for the ``bluxqd`` console script."""
 
+    runtime.ensure_supported_python("bluxqd")
+    if not telemetry.ensure_log_dir():
+        telemetry.record_event(
+            "startup.degrade",
+            level="warn",
+            actor="daemon",
+            payload={"component": "bluxqd", "reason": "log_dir_unavailable"},
+        )
+
+    telemetry.record_event("daemon.start", actor="daemon", payload={})
     telemetry.record_event("daemon.start", {})
 
     loop = asyncio.new_event_loop()

@@ -5,6 +5,142 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sqlite3
+import sys
+import threading
+import time
+from contextlib import contextmanager
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, AsyncIterator, Dict, Iterable, Optional
+
+# Resolve the telemetry directory, allowing overrides for testing or custom deployments.
+_LOG_DIR = Path(
+    os.environ.get("BLUX_GUARD_LOG_DIR", Path.home() / ".config" / "blux-guard" / "logs")
+)
+_JSONL = _LOG_DIR / "audit.jsonl"
+_DEVJSONL = _LOG_DIR / "devshell.jsonl"
+_DB = _LOG_DIR / "telemetry.db"
+
+_warned_once: Dict[str, bool] = {"json": False, "sqlite": False, "dir": False}
+_lock = threading.Lock()
+
+
+def _telemetry_enabled() -> bool:
+    """Return True when telemetry sinks should be active."""
+
+    return os.getenv("BLUX_GUARD_TELEMETRY", "on").lower() not in {
+        "0",
+        "off",
+        "false",
+        "no",
+    }
+
+
+def _warn_once(channel: str, message: str) -> None:
+    """Emit a single degrade warning to stderr per channel."""
+
+    if os.getenv("BLUX_GUARD_TELEMETRY_WARN", "once").lower() != "once":
+        return
+
+    if not _warned_once.get(channel):
+        _warned_once[channel] = True
+        print(f"[blux-guard] telemetry degrade: {message}", file=sys.stderr)
+
+
+def _ensure_dirs() -> bool:
+    """Create the telemetry directory if possible."""
+
+    try:
+        _LOG_DIR.mkdir(parents=True, exist_ok=True)
+        return True
+    except Exception as exc:  # pragma: no cover - defensive
+        _warn_once("dir", f"cannot create log dir {_LOG_DIR}: {exc}")
+        return False
+
+
+def ensure_log_dir() -> bool:
+    """Public helper to prepare the telemetry directory."""
+
+    return _ensure_dirs()
+
+
+def _safe_jsonl_write(path: Path, obj: Dict[str, Any]) -> None:
+    try:
+        with _lock:
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(obj, ensure_ascii=False) + "\n")
+    except Exception as exc:  # pragma: no cover - defensive
+        _warn_once("json", f"jsonl write failed ({path}): {exc}")
+
+
+def _safe_sqlite_write(table: str, obj: Dict[str, Any]) -> None:
+    try:
+        with _lock:
+            conn = sqlite3.connect(_DB)
+            try:
+                conn.execute(
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {table} (
+                        ts REAL,
+                        level TEXT,
+                        actor TEXT,
+                        action TEXT,
+                        stream TEXT,
+                        payload TEXT
+                    )
+                    """
+                )
+                conn.execute(
+                    f"""
+                    INSERT INTO {table} (ts, level, actor, action, stream, payload)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        obj.get("ts"),
+                        obj.get("level"),
+                        obj.get("actor"),
+                        obj.get("action"),
+                        obj.get("stream"),
+                        json.dumps(obj.get("payload", {}), ensure_ascii=False),
+                    ),
+                )
+                conn.commit()
+            finally:
+                conn.close()
+    except Exception as exc:  # pragma: no cover - defensive
+        _warn_once("sqlite", f"sqlite write failed ({_DB}): {exc}")
+
+
+def record_event(
+    action: str,
+    level: str = "info",
+    actor: Optional[str] = None,
+    payload: Optional[Dict[str, Any]] = None,
+    *,
+    stream: str = "audit",
+) -> None:
+    """Best-effort event recorder that never raises."""
+
+    if not _telemetry_enabled():
+        return
+
+    payload = payload or {}
+    ensure_log_dir()
+
+    obj = {
+        "ts": time.time(),
+        "level": level,
+        "actor": actor or "local",
+        "action": action,
+        "payload": payload,
+        "stream": stream,
+        "channel": action,
+    }
+
+    path = _JSONL if stream == "audit" else _DEVJSONL
+    _safe_jsonl_write(path, obj)
+    _safe_sqlite_write("events", obj)
 import pathlib
 import sqlite3
 import time
@@ -62,6 +198,13 @@ def record_event(channel: str, payload: Dict[str, Any]) -> None:
 async def collect_status() -> Dict[str, Any]:
     """Return a simplified status snapshot for CLI consumption."""
 
+    ensure_log_dir()
+    return {
+        "log_dir": str(_LOG_DIR),
+        "audit_log": str(_JSONL),
+        "devshell_log": str(_DEVJSONL),
+        "sqlite_db": str(_DB),
+        "telemetry_enabled": _telemetry_enabled(),
     _ensure_dirs()
     return {
         "log_dir": str(_LOG_BASE),
@@ -99,6 +242,11 @@ async def iter_prometheus_metrics() -> AsyncIterator[str]:
     """Yield Prometheus metric strings asynchronously."""
 
     metrics = [
+        Metric(
+            name="blux_guard_heartbeat",
+            value=time.time(),
+            description="Wall clock timestamp",
+        ),
         Metric(name="blux_guard_heartbeat", value=time.time(), description="Wall clock timestamp"),
     ]
     for metric in metrics:
@@ -112,6 +260,13 @@ def export_prometheus() -> str:
     loop = asyncio.get_event_loop()
     if loop.is_running():
         raise RuntimeError("export_prometheus must not be called from a running loop")
+
+    metrics: list[str] = []
+
+    async def _collect() -> None:
+        async for chunk in iter_prometheus_metrics():
+            metrics.append(chunk)
+
     metrics: list[str] = []
     async def _collect() -> None:
         async for chunk in iter_prometheus_metrics():
@@ -121,6 +276,11 @@ def export_prometheus() -> str:
 
 
 @contextmanager
+def scoped_event(action: str, **payload: Any) -> Iterable[None]:
+    """Context manager that automatically records start/stop events."""
+
+    start_payload = {**payload, "phase": "start"}
+    record_event(action, payload=start_payload)
 def scoped_event(channel: str, **payload: Any) -> Iterable[None]:
     """Context manager that automatically records start/stop events."""
 
@@ -130,4 +290,5 @@ def scoped_event(channel: str, **payload: Any) -> Iterable[None]:
         yield
     finally:
         end_payload = {**payload, "phase": "end"}
+        record_event(action, payload=end_payload)
         record_event(channel, end_payload)

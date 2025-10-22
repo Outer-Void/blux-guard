@@ -14,6 +14,7 @@ try:
 except Exception:  # pragma: no cover - defensive import guard
     legacy_cli = None
 
+from blux_guard.core import devsuite, runtime, sandbox, telemetry
 from blux_guard.core import devsuite, sandbox, telemetry
 from blux_guard.tui import dashboard
 
@@ -30,6 +31,15 @@ def main() -> None:
 
     The callback is intentionally empty so Typer can manage sub-commands.
     """
+
+    runtime.ensure_supported_python("bluxq")
+    if not telemetry.ensure_log_dir():
+        telemetry.record_event(
+            "startup.degrade",
+            level="warn",
+            actor="cli",
+            payload={"component": "bluxq", "reason": "log_dir_unavailable"},
+        )
 
 
 def _ensure_event_loop() -> asyncio.AbstractEventLoop:

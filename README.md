@@ -379,3 +379,43 @@ Toggles:
 - **Termux storage prompts** – run `termux-setup-storage` before launching to grant write access.
 
 BLUX Guard — the forge remains open, even when the pen runs dry.
+
+## Developer Suite Quick Start
+
+```bash
+# Install (venv recommended)
+python -m pip install -U pip
+pip install -e .
+
+# Start daemon & open cockpit
+bluxqd &
+bluxq guard status
+bluxq guard tui --mode dev
+```
+
+Telemetry is best-effort:
+
+- JSONL: `~/.config/blux-guard/logs/audit.jsonl`
+- Dev shell: `~/.config/blux-guard/logs/devshell.jsonl`
+- SQLite mirror (optional): `~/.config/blux-guard/logs/telemetry.db`
+
+To disable: `BLUX_GUARD_TELEMETRY=off`.
+
+## Documentation Map
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — module graph and platform matrix.
+- [INSTALL.md](INSTALL.md) — platform-specific install steps.
+- [OPERATIONS.md](OPERATIONS.md) — runbook for day-two operations.
+- [SECURITY.md](SECURITY.md) — threat model, doctrine enforcement, telemetry guarantees.
+- [PRIVACY.md](PRIVACY.md) — telemetry scope and retention controls.
+- [CONFIGURATION.md](CONFIGURATION.md) — YAML schema and overrides.
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — quick fixes for common issues.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and coding standards.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community expectations.
+- [SUPPORT.md](SUPPORT.md) — escalation paths and SLAs.
+- [ROADMAP.md](ROADMAP.md) — upcoming milestones.
+
+## Supported Python Versions
+
+The cockpit validates Python 3.9+ on startup. Supported interpreters: 3.9, 3.10, and 3.11. Upgrade the
+interpreter if you receive a startup warning.

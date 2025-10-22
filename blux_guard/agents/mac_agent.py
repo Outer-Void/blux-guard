@@ -14,6 +14,7 @@ class MacAgent:
         except Exception:
             output = "unavailable"
         data = {"uptime": output}
+        telemetry.record_event("agent.mac", actor="agent", payload=data)
         telemetry.record_event("agent.mac", data)
         return data
 
