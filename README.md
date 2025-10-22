@@ -419,3 +419,184 @@ To disable: `BLUX_GUARD_TELEMETRY=off`.
 
 The cockpit validates Python 3.9+ on startup. Supported interpreters: 3.9, 3.10, and 3.11. Upgrade the
 interpreter if you receive a startup warning.
+
+<!-- FILETREE:BEGIN -->
+<!-- generated; do not edit manually -->
+<details><summary><strong>Repository File Tree</strong> (click to expand)</summary>
+
+```text
+blux-guard/
+├── .github
+│   ├── workflows
+│   │   ├── ci.yml
+│   │   └── security.yml
+│   └── dependabot.yml
+├── blux_cli
+│   ├── widgets
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_controls.py
+│   │   ├── blux_cockpit.css
+│   │   ├── cockpit_header_footer.py
+│   │   ├── decisions_view.py
+│   │   ├── dev_menu_tree.py
+│   │   ├── logs_view.py
+│   │   ├── network_monitor.py
+│   │   ├── node_data.json
+│   │   ├── process_monitor.py
+│   │   ├── scripts_view.py
+│   │   ├── sensors_dashboard.py
+│   │   └── tree.py
+│   ├── __init__.py
+│   ├── blux.py
+│   └── security_integration.py
+├── blux_guard
+│   ├── agents
+│   │   ├── __init__.py
+│   │   ├── common.py
+│   │   ├── linux_agent.py
+│   │   ├── mac_agent.py
+│   │   ├── termux_agent.py
+│   │   └── windows_agent.py
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── guardd.py
+│   │   ├── server.py
+│   │   └── stream.py
+│   ├── cli
+│   │   ├── __init__.py
+│   │   ├── bluxq.py
+│   │   └── README.md
+│   ├── config
+│   │   ├── __init__.py
+│   │   ├── default.yaml
+│   │   └── local.yaml
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── devsuite.py
+│   │   ├── doctrine_integration.py
+│   │   ├── engine.py
+│   │   ├── runtime.py
+│   │   ├── sandbox.py
+│   │   ├── selfcheck.py
+│   │   ├── telemetry.md
+│   │   └── telemetry.py
+│   ├── tui
+│   │   ├── __init__.py
+│   │   ├── audit_panel.py
+│   │   ├── dashboard.py
+│   │   ├── metrics_panel.py
+│   │   ├── README.md
+│   │   └── shell_panel.py
+│   └── __init__.py
+├── blux_guard_shell
+│   ├── __init__.py
+│   └── shell_menu.py
+├── blux_modules
+│   ├── security
+│   │   ├── anti_tamper
+│   │   │   ├── nano_swarm
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── swarm.css
+│   │   │   │   └── swarm_sim.py
+│   │   │   ├── watchdog
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── heartbeat.py
+│   │   │   ├── __init__.py
+│   │   │   ├── package_monitor.py
+│   │   │   ├── selinux_monitor.py
+│   │   │   └── su_sentinel.py
+│   │   ├── contain_respond
+│   │   │   ├── __init__.py
+│   │   │   ├── filesystem.py
+│   │   │   ├── logging.py
+│   │   │   ├── network_intercepter.py
+│   │   │   └── process_isolator.py
+│   │   ├── decision_layer
+│   │   │   ├── __init__.py
+│   │   │   ├── policies.json
+│   │   │   ├── policies.txt
+│   │   │   └── uid_policies.py
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_engine.py
+│   │   ├── auth_system.py
+│   │   ├── contain_engine.py
+│   │   ├── decisions_engine.py
+│   │   ├── privilege_manager.py
+│   │   ├── sensors_manager.py
+│   │   └── trip_engine.py
+│   ├── sensors
+│   │   ├── __init__.py
+│   │   ├── dns.py
+│   │   ├── filesystem.py
+│   │   ├── hardware.py
+│   │   ├── human_factors.py
+│   │   ├── network.py
+│   │   ├── permission.py
+│   │   ├── permissions.py
+│   │   └── process_lifecycle.py
+│   └── __init__.py
+├── examples
+│   ├── config.sample.yaml
+│   └── doctrine.sample.md
+├── logs
+│   ├── anti_tamper
+│   ├── decisions
+│   │   └── incidents.log
+│   └── sensors
+├── scripts
+│   ├── __init__.py
+│   ├── auth_reset.py
+│   ├── check_root.sh
+│   ├── check_status.sh
+│   ├── clean_temp.sh
+│   ├── create_venv.sh
+│   ├── daily_report.sh
+│   ├── debug_env.sh
+│   ├── gen_filetree.py
+│   ├── initiate_cockpit.sh
+│   ├── inspect_modules.py
+│   ├── install_linux.sh
+│   ├── install_termux.sh
+│   ├── install_windows.ps1
+│   ├── reload_config.sh
+│   ├── restart.sh
+│   ├── root_workaround.sh
+│   ├── rotate_logs.sh
+│   ├── run_guard.sh
+│   ├── schedule_checks.sh
+│   ├── set_user_pin.sh
+│   ├── setup_env.sh
+│   ├── setup_security.py
+│   ├── unlock_system.sh
+│   ├── update_modules.sh
+│   └── update_readme_filetree.py
+├── tests
+│   └── test_cli.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .ruff.toml
+├── ARCHITECTURE.md
+├── blux_shell.py
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONFIGURATION.md
+├── CONTRIBUTING.md
+├── initiate_cockpit.py
+├── INSTALL.md
+├── LICENSE
+├── Makefile
+├── mypy.ini
+├── OPERATIONS.md
+├── PRIVACY.md
+├── pyproject.toml
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── ROADMAP.md
+├── SECURITY.md
+├── SUPPORT.md
+└── TROUBLESHOOTING.md
+```
+</details>
+<!-- FILETREE:END -->
+
