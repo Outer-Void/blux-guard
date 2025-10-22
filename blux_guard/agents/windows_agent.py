@@ -11,7 +11,6 @@ class WindowsAgent:
     def collect(self) -> dict:
         data = {"platform": platform.platform()}
         telemetry.record_event("agent.windows", actor="agent", payload=data)
-        telemetry.record_event("agent.windows", data)
         return data
 
 

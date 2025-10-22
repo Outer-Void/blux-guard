@@ -6,6 +6,7 @@ import asyncio
 import os
 import platform
 import shlex
+import traceback
 from typing import Iterable, Optional
 
 from . import telemetry
@@ -39,15 +40,26 @@ async def launch_interactive_shell(command: Optional[str] = None) -> None:
         payload={"shell": shell, "mode": "interactive"},
         stream="devshell",
     )
-    telemetry.record_event("sandbox.shell", {"shell": shell, "mode": "interactive"})
-    process = await asyncio.create_subprocess_exec(
-        shell,
-        stdin=None,
-        stdout=None,
-        stderr=None,
-        env=env if env else None,
-    )
-    await process.wait()
+    try:
+        process = await asyncio.create_subprocess_exec(
+            shell,
+            stdin=None,
+            stdout=None,
+            stderr=None,
+            env=env if env else None,
+        )
+        await process.wait()
+    except Exception as exc:  # pragma: no cover - defensive
+        telemetry.record_event(
+            "sandbox.error",
+            level="error",
+            actor="sandbox",
+            payload={"shell": shell, "error": str(exc)},
+            stream="devshell",
+        )
+        if telemetry.debug_enabled():
+            traceback.print_exc()
+        raise
 
 
 async def run_command(command: Iterable[str] | str) -> int:
@@ -65,6 +77,44 @@ async def run_command(command: Iterable[str] | str) -> int:
         payload={"command": display},
         stream="devshell",
     )
-    telemetry.record_event("sandbox.exec", {"command": display})
-    process = await asyncio.create_subprocess_exec(*args)
-    return await process.wait()
+    try:
+        process = await asyncio.create_subprocess_exec(*args)
+        return await process.wait()
+    except Exception as exc:  # pragma: no cover - defensive
+        telemetry.record_event(
+            "sandbox.exec_error",
+            level="error",
+            actor="sandbox",
+            payload={"command": display, "error": str(exc)},
+            stream="devshell",
+        )
+        if telemetry.debug_enabled():
+            traceback.print_exc()
+        raise
+
+
+async def probe_shell() -> str:
+    """Probe whether launching a basic shell command succeeds."""
+
+    try:
+        command = _base_shell()
+        system = platform.system().lower()
+        if "windows" in system:
+            lowered = command.lower()
+            if "powershell" in lowered or lowered.endswith("pwsh") or lowered.endswith("pwsh.exe"):
+                args = ["-Command", "exit 0"]
+            else:
+                args = ["/C", "exit 0"]
+        else:
+            args = ["-c", "exit 0"]
+        process = await asyncio.create_subprocess_exec(command, *args)
+        await process.wait()
+        return command
+    except Exception as exc:  # pragma: no cover - defensive
+        telemetry.record_event(
+            "sandbox.probe_error",
+            level="warn",
+            actor="sandbox",
+            payload={"error": str(exc)},
+        )
+        raise

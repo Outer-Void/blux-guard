@@ -1,3 +1,5 @@
 """BLUX Guard core package for Developer Suite extensions."""
 
-from . import telemetry  # noqa: F401 - re-export for convenience
+from .core import telemetry as telemetry  # re-export for convenience
+
+__all__ = ["telemetry"]

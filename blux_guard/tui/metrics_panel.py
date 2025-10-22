@@ -21,6 +21,5 @@ class MetricsPanel(Static):
             f"Log dir: {status['log_dir']}\n"
             f"Audit log entries -> {status['audit_log']}\n"
             f"Telemetry enabled: {status['telemetry_enabled']}"
-            f"Audit log entries -> {status['audit_log']}"
         )
         self.update(message)

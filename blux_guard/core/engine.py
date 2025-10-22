@@ -28,9 +28,6 @@ def enforce(channel: str) -> Callable[[F], F]:
                 actor="policy",
                 payload={"phase": "after"},
             )
-            telemetry.record_event(f"policy.{channel}", {"phase": "before"})
-            result = await func(*args, **kwargs)
-            telemetry.record_event(f"policy.{channel}", {"phase": "after"})
             return result
 
         return wrapper  # type: ignore[return-value]

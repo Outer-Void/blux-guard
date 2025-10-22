@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import asyncio
+import sys
 from typing import Callable
 
 import uvicorn
 
 from ..agents import common, linux_agent, mac_agent, termux_agent, windows_agent
 from ..core import runtime, telemetry
-from ..core import telemetry
 from .server import app
 
 _AGENT_MAP = {
@@ -31,12 +32,26 @@ async def _poll_agents() -> None:
                 actor="daemon",
                 payload=getattr(agent, "collect")(),
             )
-            telemetry.record_event("daemon.poll", getattr(agent, "collect")())
         await asyncio.sleep(30)
+
+
+def _parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--debug", action="store_true", help="Enable debug output")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose telemetry")
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8000)
+    return parser.parse_args(argv)
 
 
 def start() -> None:
     """Entry point for the ``bluxqd`` console script."""
+
+    args = _parse_args(sys.argv[1:])
+    runtime.set_debug(args.debug)
+    runtime.set_verbose(args.verbose)
+    telemetry.set_debug(args.debug)
+    telemetry.set_verbose(args.verbose)
 
     runtime.ensure_supported_python("bluxqd")
     if not telemetry.ensure_log_dir():
@@ -48,14 +63,18 @@ def start() -> None:
         )
 
     telemetry.record_event("daemon.start", actor="daemon", payload={})
-    telemetry.record_event("daemon.start", {})
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     async def runner() -> None:
         poller = loop.create_task(_poll_agents())
-        config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+        config = uvicorn.Config(
+            app,
+            host=args.host,
+            port=args.port,
+            log_level="debug" if args.debug else "info",
+        )
         server = uvicorn.Server(config)
         await server.serve()
         poller.cancel()

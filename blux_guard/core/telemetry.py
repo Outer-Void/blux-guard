@@ -24,6 +24,8 @@ _DB = _LOG_DIR / "telemetry.db"
 
 _warned_once: Dict[str, bool] = {"json": False, "sqlite": False, "dir": False}
 _lock = threading.Lock()
+_DEBUG = False
+_VERBOSE = False
 
 
 def _telemetry_enabled() -> bool:
@@ -63,6 +65,28 @@ def ensure_log_dir() -> bool:
     """Public helper to prepare the telemetry directory."""
 
     return _ensure_dirs()
+
+
+def set_debug(enabled: bool) -> None:
+    """Enable or disable debug mode for telemetry outputs."""
+
+    global _DEBUG
+    _DEBUG = enabled
+
+
+def set_verbose(enabled: bool) -> None:
+    """Enable or disable verbose mode for telemetry outputs."""
+
+    global _VERBOSE
+    _VERBOSE = enabled
+
+
+def debug_enabled() -> bool:
+    return _DEBUG
+
+
+def verbose_enabled() -> bool:
+    return _VERBOSE
 
 
 def _safe_jsonl_write(path: Path, obj: Dict[str, Any]) -> None:
@@ -141,58 +165,10 @@ def record_event(
     path = _JSONL if stream == "audit" else _DEVJSONL
     _safe_jsonl_write(path, obj)
     _safe_sqlite_write("events", obj)
-import pathlib
-import sqlite3
-import time
-from contextlib import contextmanager
-from dataclasses import dataclass
-from typing import Any, AsyncIterator, Dict, Iterable
 
-_LOG_BASE = pathlib.Path(os.environ.get("BLUX_GUARD_LOG_DIR", pathlib.Path.home() / ".config" / "blux-guard" / "logs"))
-_AUDIT_LOG = _LOG_BASE / "audit.jsonl"
-_DEVSHELL_LOG = _LOG_BASE / "devshell.jsonl"
-_SQLITE_DB = _LOG_BASE / "telemetry.sqlite3"
-
-
-def _ensure_dirs() -> None:
-    _LOG_BASE.mkdir(parents=True, exist_ok=True)
-
-
-def _append_jsonl(path: pathlib.Path, payload: Dict[str, Any]) -> None:
-    _ensure_dirs()
-    line = json.dumps(payload, sort_keys=True)
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(line + "\n")
-
-
-def _ensure_sqlite() -> None:
-    _ensure_dirs()
-    with sqlite3.connect(_SQLITE_DB) as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS events (
-                ts REAL NOT NULL,
-                channel TEXT NOT NULL,
-                payload TEXT NOT NULL
-            )
-            """
-        )
-        conn.commit()
-
-
-def record_event(channel: str, payload: Dict[str, Any]) -> None:
-    """Persist a telemetry event across JSONL and SQLite sinks."""
-
-    timestamp = time.time()
-    body = {"ts": timestamp, "channel": channel, **payload}
-    _append_jsonl(_AUDIT_LOG if channel.startswith("audit") else _DEVSHELL_LOG, body)
-    _ensure_sqlite()
-    with sqlite3.connect(_SQLITE_DB) as conn:
-        conn.execute(
-            "INSERT INTO events (ts, channel, payload) VALUES (?, ?, ?)",
-            (timestamp, channel, json.dumps(payload, sort_keys=True)),
-        )
-        conn.commit()
+    if _DEBUG or _VERBOSE:
+        preview = json.dumps(obj, ensure_ascii=False, sort_keys=True)
+        print(f"[telemetry] {preview}", file=sys.stderr)
 
 
 async def collect_status() -> Dict[str, Any]:
@@ -205,12 +181,8 @@ async def collect_status() -> Dict[str, Any]:
         "devshell_log": str(_DEVJSONL),
         "sqlite_db": str(_DB),
         "telemetry_enabled": _telemetry_enabled(),
-    _ensure_dirs()
-    return {
-        "log_dir": str(_LOG_BASE),
-        "audit_log": str(_AUDIT_LOG),
-        "devshell_log": str(_DEVSHELL_LOG),
-        "sqlite_db": str(_SQLITE_DB),
+        "debug": _DEBUG,
+        "verbose": _VERBOSE,
     }
 
 
@@ -247,7 +219,6 @@ async def iter_prometheus_metrics() -> AsyncIterator[str]:
             value=time.time(),
             description="Wall clock timestamp",
         ),
-        Metric(name="blux_guard_heartbeat", value=time.time(), description="Wall clock timestamp"),
     ]
     for metric in metrics:
         yield metric.to_prometheus()
@@ -267,10 +238,6 @@ def export_prometheus() -> str:
         async for chunk in iter_prometheus_metrics():
             metrics.append(chunk)
 
-    metrics: list[str] = []
-    async def _collect() -> None:
-        async for chunk in iter_prometheus_metrics():
-            metrics.append(chunk)
     loop.run_until_complete(_collect())
     return "\n".join(metrics)
 
@@ -281,14 +248,8 @@ def scoped_event(action: str, **payload: Any) -> Iterable[None]:
 
     start_payload = {**payload, "phase": "start"}
     record_event(action, payload=start_payload)
-def scoped_event(channel: str, **payload: Any) -> Iterable[None]:
-    """Context manager that automatically records start/stop events."""
-
-    start_payload = {**payload, "phase": "start"}
-    record_event(channel, start_payload)
     try:
         yield
     finally:
         end_payload = {**payload, "phase": "end"}
         record_event(action, payload=end_payload)
-        record_event(channel, end_payload)

@@ -14,7 +14,6 @@ class LinuxAgent:
             "load": load,
         }
         telemetry.record_event("agent.linux", actor="agent", payload=data)
-        telemetry.record_event("agent.linux", data)
         return data
 
 
