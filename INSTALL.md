@@ -16,10 +16,7 @@ After installation, launch the daemon and cockpit:
 bluxqd &
 bluxq guard status
 bluxq guard tui --mode dev
-bluxq guard self-check
 ```
-
-Pass `--debug` or `--verbose` to any `bluxq` command when additional telemetry mirrors are required.
 
 ## Android / Termux
 

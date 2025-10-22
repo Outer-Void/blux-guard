@@ -1,4 +1,4 @@
-.PHONY: dev lint test tui filetree
+.PHONY: dev lint test tui
 
 dev:
 	python -m pip install -U pip && pip install -e .[dev] || pip install -e .
@@ -13,6 +13,3 @@ test:
 
 tui:
 	bluxq guard tui --mode dev
-
-filetree:
-	python scripts/update_readme_filetree.py

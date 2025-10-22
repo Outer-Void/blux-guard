@@ -34,7 +34,6 @@ bluxq → runtime.ensure_supported_python → sandbox.enforce → doctrine.check
 - `blux_guard/core/__init__.py` exposes the developer runtime modules.
 - Legacy sensors and trip engines in `blux_modules/` remain the authoritative signal generators.
 - Agents call back into `telemetry` so all platforms share a unified audit surface.
-- `blux_guard/core/selfcheck.py` coordinates health checks consumed by `bluxq guard self-check`.
 
 ## Platform Matrix
 

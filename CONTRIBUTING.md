@@ -27,7 +27,6 @@ Run `make test` locally. CI executes Ruff, MyPy (non-fatal), and Pytest across P
 ## Documentation
 
 Update relevant docs when adding features. The README links to the documentation suite; keep entries current.
-Use `make filetree` after adding or renaming files to refresh the collapsible repository tree in the README.
 
 ## Pull Requests
 

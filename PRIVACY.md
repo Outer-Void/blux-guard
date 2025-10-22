@@ -19,8 +19,6 @@ BLUX Guard stores telemetry locally on the operator's device. No automatic uploa
 - Disable telemetry: set `BLUX_GUARD_TELEMETRY=off` before launching `bluxq` or `bluxqd`.
 - Limit warnings: `BLUX_GUARD_TELEMETRY_WARN=once` prints a single degrade message when storage fails.
 - Custom location: `BLUX_GUARD_LOG_DIR=/custom/path` redirects all files.
-- Local mirrors only: `bluxq --debug` and `bluxqd --debug` echo telemetry events to stderr without sending
-  them off-device.
 
 ## Retention & Rotation
 

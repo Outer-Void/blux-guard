@@ -26,17 +26,6 @@ sqlite3 ~/.config/blux-guard/logs/telemetry.db 'VACUUM;'
 - `BLUX_GUARD_TELEMETRY=off` — disable JSONL/SQLite writes.
 - `BLUX_GUARD_TELEMETRY_WARN=once` — print a single degrade warning to stderr on failure.
 - `BLUX_GUARD_LOG_DIR=/custom/path` — override the log directory.
-- `BLUX_GUARD_TELEMETRY=off` combined with `bluxq --debug` is useful when triaging issues without
-  writing to disk.
-
-## Debug & Diagnostics
-
-- Launch the CLI with `--debug` to surface stack traces and per-event telemetry output.
-- Use `--verbose` to print telemetry payloads without enabling stack traces.
-- `bluxq guard self-check` validates config presence, log directory writability, sandbox execution,
-  and daemon reachability. An audit event is recorded with the outcome.
-- Daemon debugging: `bluxqd --debug --host 0.0.0.0 --port 8000` raises the Uvicorn log level to
-  debug and mirrors telemetry to stderr.
 
 ## Backup & Restore
 
