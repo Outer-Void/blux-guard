@@ -1,0 +1,6 @@
+# Default configuration for the BLUX Guard Developer Suite
+telemetry:
+  log_dir: "~/.config/blux-guard/logs"
+api:
+  host: 0.0.0.0
+  port: 8000
