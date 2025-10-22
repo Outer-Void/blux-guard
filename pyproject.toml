@@ -12,15 +12,25 @@ license = { text = "Apache 2.0 License" }
 dependencies = [
     "argon2-cffi",
     "cryptography",
-    "textual",
+    "textual>=0.62.0",
     "textual-dev",
-    "rich",
-    "pysqlite3"
+    "rich>=13.7.0",
+    "pysqlite3",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "typer>=0.12.3",
+    "psutil>=5.9.8",
+    "sqlite-utils>=3.36",
+    "prometheus-client>=0.20.0",
 ]
+
+[project.scripts]
+bluxq = "blux_guard.cli.bluxq:app"
+bluxqd = "blux_guard.api.guardd:start"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["blux_modules*"]  # If you have other modules in a blux_modules directory
+include = ["blux_modules*", "blux_guard*"]  # Include legacy and new developer suite modules
 
 [tool.setuptools.package-data]
 blux_modules = ["*"]

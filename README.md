@@ -317,3 +317,65 @@ v1.0 Full BLUX Guard operator suite
 BLUX Guard Doctrine — Building walls that respect your hunger and deny the pack.
 
 
+
+---
+
+## Power Mode 2.0 Quick Start
+
+1. **Install**
+   ```bash
+   # recommended virtual environment
+   python -m pip install -U pip
+   pip install -e .
+   ```
+2. **Launch the daemon and cockpit**
+   ```bash
+   bluxqd &
+   bluxq guard status
+   bluxq guard tui --mode dev
+   ```
+3. **Developer workflows**
+   ```bash
+   bluxq dev init
+   bluxq dev shell
+   bluxq dev scan .
+   bluxq dev deploy --safe
+   ```
+4. **Fallbacks** — `initiate_cockpit.py` and the legacy CLI continue to operate unchanged.
+
+## Security Model & Doctrine Alignment
+
+- **User / Operator / Root (cA)** tiers remain enforced. Developer flows inherit doctrine checks before privileged actions.
+- All automation routes through the sandboxed PTY shell to respect containment boundaries.
+- Doctrine integrations surface alignment scores directly inside the cockpit and via the CLI.
+
+## Telemetry & Reliability
+
+BLUX Guard writes best-effort logs to:
+
+- `~/.config/blux-guard/logs/audit.jsonl`
+- `~/.config/blux-guard/logs/devshell.jsonl` (developer shell stream)
+- Optional mirror: `~/.config/blux-guard/logs/telemetry.db` (SQLite)
+
+If the directory is unwritable or SQLite is unavailable, logging **degrades silently** and the app **continues running**.
+
+Toggles:
+
+- `BLUX_GUARD_TELEMETRY=off` → disable telemetry writes
+- `BLUX_GUARD_TELEMETRY_WARN=once` → show a single degrade warning on stderr
+
+## Cross-Platform Notes
+
+- **Android / Termux** – installers configure aliases; telemetry lives under `$HOME/.config/blux-guard/logs`.
+- **WSL2 & Linux** – sandbox shell defaults to `/bin/bash`, Prometheus metrics export via `bluxqd`.
+- **macOS** – shell panel launches `/bin/zsh` while retaining doctrine validation.
+- **Windows** – PowerShell support via `COMSPEC`; telemetry paths expand to `%USERPROFILE%\.config\blux-guard\logs`.
+
+## Troubleshooting
+
+- **CLI reports `ModuleNotFoundError: typer`** – reinstall with `pip install -e .` to ensure dependencies.
+- **Permission denied writing logs** – create the telemetry directory manually or set `BLUX_GUARD_TELEMETRY=off`.
+- **SQLite locked or missing** – mirror is optional; the CLI continues using JSONL streams and emits a single degrade warning when enabled.
+- **Termux storage prompts** – run `termux-setup-storage` before launching to grant write access.
+
+BLUX Guard — the forge remains open, even when the pen runs dry.
