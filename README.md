@@ -1,6 +1,6 @@
 # BLUX Guard
 
-> — Android Terminal High-Alert Security System
+> Android Terminal High-Alert Security System
 
 ---
 
@@ -10,507 +10,593 @@ A discreet, layered defender that uses deterministic trip-variables, tamper-resi
 
 ---
 
-## Directory layout
+## Directory Layout
 
 ```bash
-~/blux-guard
-├── .config
-│   ├── blux-guard/              # runtime configs, keys, manifests
-│   └── rules/
-│       └── rules.json           # signed rule manifests (trip-wires)
+blux-guard/
+├── blux_cli/
+│   ├── blux.py
+│   ├── __init__.py
+│   ├── security_integration.py
+│   └── widgets/
+│       ├── anti_tamper_controls.py
+│       ├── blux_cockpit.css
+│       ├── cockpit_header_footer.py
+│       ├── decisions_view.py
+│       ├── dev_menu_tree.py
+│       ├── __init__.py
+│       ├── logs_view.py
+│       ├── network_monitor.py
+│       ├── node_data.json
+│       ├── process_monitor.py
+│       ├── scripts_view.py
+│       ├── sensors_dashboard.py
+│       └── tree.py
+├── blux_guard_shell/
+│   ├── __init__.py
+│   └── shell_menu.py
+├── blux_modules/
+│   ├── __init__.py
+│   ├── security/
+│   │   ├── anti_tamper/
+│   │   │   ├── __init__.py
+│   │   │   ├── nano_swarm/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── swarm.css
+│   │   │   │   └── swarm_sim.py
+│   │   │   ├── package_monitor.py
+│   │   │   ├── selinux_monitor.py
+│   │   │   ├── su_sentinel.py
+│   │   │   └── watchdog/
+│   │   │       ├── heartbeat.py
+│   │   │       └── __init__.py
+│   │   ├── anti_tamper_engine.py
+│   │   ├── auth_system.py
+│   │   ├── contain_engine.py
+│   │   ├── contain_respond/
+│   │   │   ├── filesystem.py
+│   │   │   ├── __init__.py
+│   │   │   ├── logging.py
+│   │   │   └── network_intercepter.py
+│   │   ├── decision_layer/
+│   │   │   ├── __init__.py
+│   │   │   ├── policies.json
+│   │   │   ├── policies.txt
+│   │   │   └── uid_policies.py
+│   │   ├── decisions_engine.py
+│   │   ├── __init__.py
+│   │   ├── privilege_manager.py
+│   │   ├── sensors_manager.py
+│   │   └── trip_engine.py
+│   └── sensors/
+│       ├── dns.py
+│       ├── filesystem.py
+│       ├── hardware.py
+│       ├── human_factors.py
+│       ├── __init__.py
+│       ├── network.py
+│       ├── permission.py
+│       ├── permissions.py
+│       └── process_lifecycle.py
+├── blux_shell.py
+├── initiate_cockpit.py
+├── logs/
+│   ├── anti_tamper/
+│   ├── decisions/
+│   │   └── incidents.log
+│   └── sensors/
+├── pyproject.toml
 ├── README.md
-├── blux-cli                     # main CLI launcher (entrypoint)
-├── docs/
-│   └── assets/                  # diagrams, rule samples, visuals
-├── scripts/                     # operational shell utilities
-└── security/
-    ├── logs/                    # append-only incident logs
-    └── trip_engine.py           # Termux-friendly Trip Engine demo
+├── requirements.txt
+└── scripts/
+    ├── auth_reset.py
+    ├── check_root.sh
+    ├── check_status.sh
+    ├── clean_temp.sh
+    ├── create_venv.sh
+    ├── daily_report.sh
+    ├── debug_env.sh
+    ├── initiate_cockpit.sh
+    ├── __init__.py
+    ├── inspect_modules.py
+    ├── reload_config.sh
+    ├── restart.sh
+    ├── root_workaround.sh
+    ├── rotate_logs.sh
+    ├── run_guard.sh
+    ├── schedule_checks.sh
+    ├── setup_env.sh
+    ├── setup_security.py
+    ├── set_user_pin.sh
+    ├── unlock_system.sh
+    └── update_modules.sh
+
+21 directories, 114 files
 ```
 
 ---
 
-## 1. Architecture overview
+## 1. Architecture Overview
 
 Sensors → Trip Engine → Decision Layer → Containment → Operator
 
-1. Sensors (data sources)
+1.1 Sensors (Data Sources)
 
-Network flows, DNS, process lifecycle, filesystem, permissions
+· Network flows, DNS queries, process lifecycle
+· Filesystem changes, permission modifications
+· Hardware events: charging, BT pairing, USB attach
+· Human factors: unlock patterns, presence windows
 
-Hardware: charging, BT pairing, USB attach
+1.2 Trip Engine (Deterministic Rules)
 
-Human factors: unlock patterns, presence windows
+· Boolean and temporal trip-wires
+· Thresholded counters and state chains
+· Signed, versioned rule manifests in .config/rules/rules.json
 
+1.3 Decision Layer
 
+· Escalation path: observe → intercept → quarantine → lockdown
+· Per-UID policies: whitelist / greylist / blacklist
+· Optional kill-switch for complete isolation
 
-2. Trip Engine (deterministic rules)
+1.4 Containment & Response
 
-Boolean and temporal trip-wires
+· Network interceptor (VpnService-like)
+· Process isolator / snapshot & rollback
+· Filesystem quarantine, permission reverter, UI fuse
+· Signed incident logs in logs/decisions/incidents.log
 
-Thresholded counters and state chains
+1.5 Integrity & Anti-tamper
 
-Signed, versioned rule manifests in .config/rules/rules.json
-
-
-
-3. Decision Layer
-
-Escalation path: observe → intercept → quarantine → lockdown
-
-Per-UID policies: whitelist / greylist / blacklist
-
-Optional kill-switch for complete isolation
-
-
-
-4. Containment & Response
-
-Network interceptor (VpnService-like)
-
-Process isolator / snapshot & rollback
-
-Filesystem quarantine, permission reverter, UI fuse
-
-Signed incident logs in security/logs/
-
-
-
-5. Integrity & Anti-tamper
-
-Watchdog with self-heartbeat
-
-Signed binaries & manifests
-
-Alerts on package manager, su binaries, SELinux changes
-
-
-
-
+· Watchdog with self-heartbeat
+· Signed binaries & manifests
+· Alerts on package manager, su binaries, SELinux changes
 
 ---
 
-## 2. Trip-variable examples
+## 2. Core Components
 
-> Deterministic, time-bounded, and auditable
+2.1 Security Modules (blux_modules/security/)
 
+· auth_system.py - Authentication and password management
+· privilege_manager.py - Root detection and privilege escalation
+· trip_engine.py - Rule evaluation and incident detection
+· decisions_engine.py - Action escalation and policy enforcement
+· anti_tamper_engine.py - System integrity monitoring
+· sensors_manager.py - Unified sensor data collection
 
+2.2 Sensor Suite (blux_modules/sensors/)
 
-Scenario	Trip condition	Action
+· network.py - Network connection monitoring
+· dns.py - DNS query analysis
+· process_lifecycle.py - Process tracking
+· filesystem.py - File system monitoring
+· hardware.py - USB/BT/charging detection
+· human_factors.py - User behavior analysis
+· permission.py - Permission change detection
 
-Silent exfil	>10 external sockets to distinct IPs in 60s	block, snapshot, notify
-Mount surprise	SD mounted while locked & charging & idle 12h+	read-only + checksum
-Privilege creep	new permission soon after unknown net conn	revert + quarantine
-Process mimic	same pkg name, different cert/hash	freeze + capture
-UI hijack	overlay within 2s of credential event	block overlay + prompt
-Cold-start lateral	unknown AUTOSTART after reboot	block autostart until review
+2.3 User Interfaces
 
+· blux_guard_shell/ - Interactive shell menu system
+· blux_cli/ - Command-line interface with TUI widgets
+· initiate_cockpit.py - Graphical cockpit interface
+· blux_shell.py - Shell launcher wrapper
 
+2.4 Anti-Tamper System (blux_modules/security/anti_tamper/)
 
----
-
-## 3. AI Security Plan — “Defending against hacker AIs”
-
-Principle:
-Break a hostile AI’s effectiveness by destroying the reliability of its inputs and the economics of its computation — always legally, always on your turf.
-
-Strategy I — “Pull it apart into a million directions”
-
-Deterministic jitter to break time-series features
-
-Proof-of-Work throttles (per-UID PoW)
-
-Honeypots and deceptive metadata
-
-Never auto-confirm success — require human validation
-
-
-Strategy II — “EMP metaphor” (safe isolation)
-
-Circuit breakers to air-gap radios or network routes
-
-Freeze/snapshot suspect processes
-
-Reduce CPU/QoS for suspect UIDs
-
-All actions signed and operator-approved
-
-
-Defensive, auditable techniques
-
-Per-UID Progressive PoW
-
-Deterministic Adversarial Jitter
-
-Honeypots + Canary Tokens
-
-Silent Alarm + Human Gate
-
-Network Circuit Breaker / Air-gap Mode
-
-Sandboxing & Snapshotting
-
-Adversarial Feedback (bounded)
-
-Fingerprint & Entropy checks
-
-Append-only signed audits
-
-
+· nano_swarm/ - Distributed security monitoring
+· watchdog/ - System heartbeat and integrity checks
+· package_monitor.py - Package manager surveillance
+· selinux_monitor.py - SELinux policy monitoring
+· su_sentinel.py - Root access detection
 
 ---
 
-## 4. Trip Engine demo (Termux-friendly)
+## 3. Quick Start
 
-A minimal proof-of-concept located at
-security/trip_engine.py.
-
-Setup
+3.1 Installation
 
 ```bash
-mkdir -p ~/.tripengine ~/.tripengine/incidents
-cp .config/rules/rules.json ~/.tripengine/
-python security/trip_engine.py
+# Clone the repository
+git clone https://github.com/Outer-Void/blux-guard.git
+cd blux-guard
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-Feed events as JSON on stdin:
+3.2 First Run
 
 ```bash
-echo '{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}' | python security/trip_engine.py
+# Start with the interactive shell
+python3 blux_guard_shell/shell_menu.py
+
+# Or use the graphical cockpit
+python3 initiate_cockpit.py
+
+# Or use the CLI
+python3 blux_cli/blux.py status
 ```
 
-Features
+3.3 Authentication
 
-Loads signed rules
+· First run will prompt for PIN setup
+· Use the same PIN across all interfaces
+· Emergency reset available via shell menu
 
-Enforces per-UID PoW
+---
 
-Writes signed incidents to security/logs/
+## 4. Trip Engine Examples
 
-Emits silent alert packets (HMAC-signed)
+Deterministic, time-bounded, and auditable
+
+Scenario Trip Condition Action
+Silent Exfil 10 external sockets to distinct IPs in 60s Block, snapshot, notify
+Mount Surprise SD mounted while locked & charging & idle 12h+ Read-only + checksum
+Privilege Creep New permission soon after unknown net conn Revert + quarantine
+Process Mimic Same pkg name, different cert/hash Freeze + capture
+UI Hijack Overlay within 2s of credential event Block overlay + prompt
+Cold-start Lateral Unknown AUTOSTART after reboot Block autostart until review
+
+---
+
+## 5. AI Security Plan
+
+Principle: Break hostile AI effectiveness by destroying input reliability and computation economics.
+
+Strategy I — "Pull It Apart"
+
+· Deterministic jitter to break time-series features
+· Proof-of-Work throttles (per-UID PoW)
+· Honeypots and deceptive metadata
+· Never auto-confirm success — require human validation
+
+Strategy II — "EMP Metaphor"
+
+· Circuit breakers to air-gap radios or network routes
+· Freeze/snapshot suspect processes
+· Reduce CPU/QoS for suspect UIDs
+· All actions signed and operator-approved
+
+---
+
+## 6. Operational Scripts
+
+The scripts/ directory contains utilities for:
+
+· Security setup: setup_security.py, set_user_pin.sh
+· System maintenance: rotate_logs.sh, clean_temp.sh
+· Debugging: debug_env.sh, inspect_modules.py
+· Automation: daily_report.sh, schedule_checks.sh
+
+---
+
+## 7. Governance & Ethics
+
+Defensive-only. No offensive payloads. All commits and rule changes must include:
+
+· Author signature
+· Simulation or test logs
+· One reviewer sign-off
+
+Security Protocols:
+
+· Private signing keys must never reside on the same device
+· Critical changes require physical ACK (BLE/NFC or manual gesture)
+· Maintain an auditable signed changelog
+
+---
+
+## 8. Roadmap
+
+Stage Goal
+v0.1 Termux Trip Engine prototype
+v0.2 Honeypot + canary endpoint
+v0.3 BLE companion listener
+v0.4 Kotlin VpnService interceptor
+v0.5 Consensus agent coordinator
+v1.0 Full BLUX Guard operator suite
+
+---
+
+## 9. Legal & Safety
+
+· ✅ Works only on devices you own or control
+· ✅ Forensics data remains private and encrypted
+· ✅ Always test on secondary hardware first
+· ✅ Never modify or erase evidence automatically
+
+---
+
+## Getting Help
+
+· Check individual module docstrings for usage
+· Review scripts/ for operational utilities
+· Use the interactive shell for guided operation
+
+BLUX Guard Doctrine — Building walls that respect your hunger and deny the pack.
 
 
 
 ---
 
-## 5. Quickstart test path (safe sandbox)
-
-1. Edit `.config/rules/rules.json` with basic rules.
-
-
-2. Run trip_engine.py and simulate events.
-
-
-3. Observe incidents written to security/logs/.
-
-
-4. Connect a BLE companion (future module) for silent alerts.
-
-
-5. Iterate thresholds in shadow mode before enabling any blocking.
-
-
-
-
----
-
-## 6. Governance & ethics
-
-Defensive-only. No offensive payloads.
-All commits and rule changes must include:
-
-Author signature
-
-Simulation or test logs
-
-One reviewer sign-off
-
-
-Private signing keys must never reside on the same device.
-Critical changes require a physical ACK (BLE/NFC or manual gesture).
-
-
----
-
-## 7. Roadmap
-
-Stage	Goal
-
-v0.1	Termux Trip Engine prototype
-v0.2	Honeypot + canary endpoint
-v0.3	BLE companion listener
-v0.4	Kotlin VpnService interceptor
-v0.5	Consensus agent coordinator
-v1.0	Full BLUX Guard operator suite
-
-
-
----
-
-## 8. Legal & safety notes
-
-Works only on devices you own or control.
-
-Forensics data remains private and encrypted.
-
-Always test on secondary hardware first.
-
-Never modify or erase evidence automatically.
-
-
-
----
-
-
-— BLUX Guard Doctrine
-
-
-
----.
-
-Feed isolated honeypots and deceptive metadata to waste training compute.
-
-Rate & cost controls: per-UID Proof-of-Work (PoW), throttling, resource caps.
-
-Starve learning signals: never auto-confirm success; require human validation for sensitive flows.
-
-
-
-2. EMP metaphor → safe equivalents (isolation & hard shutdown)
-
-Air-gapping critical systems or temporarily severing nonessential network routes.
-
-Circuit breakers: signed, auditable operator actions to cut radios or engage safe mode.
-
-Freeze & snapshot suspicious processes; deny their I/O while forensics run.
-
-Reduce CPU/QoS for suspect UIDs to deny fine-tuning compute.
-
-
-
-
-## Practical, defensive-only techniques (auditable & legal)
-
-Per-UID Progressive PoW — tunable hardness for bursts (raise cost deterministically).
-
-Deterministic Adversarial Jitter — seeded, signed timing jitter to spoil time-series features.
-
-Honeypots & Canary Tokens — bait attackers and treat hits as high-confidence signals.
-
-Silent Alarm + Human Gate — never give automated confirmation to remote clients; require operator for elevated actions.
-
-Network Circuit Breaker / Air-gap Mode — reversible, signed lockdown for high-confidence compromise.
-
-Sandboxing & Snapshotting — freeze and isolate suspicious compute; snapshot for analysis.
-
-Adversarial Feedback (bounded) — feed low-value deceptive outputs only in isolated honeypots.
-
-Fingerprinting & Model-aware Detection — JA3/TLS fingerprints, timing autocorrelation, entropy checks.
-
-Resource QoS Controls — cap CPU/memory/network on suspect UIDs.
-
-Append-only Audits — signed incident snapshots, encrypted storage, and mirrored offline.
-
-
-## Legal & ethical line
-
-Three-step, auditable plan to deploy tonight
-
-1. Per-UID PoW + throttle — integrate a CPU puzzle hook in Trip Engine; tune difficulty for bursts.
-
-
-2. Stand up a honeypot with unique canary tokens — route suspicious traffic there and auto-escalate to quarantine + silent alarm.
-
-
-3. Add deterministic adversarial jitter — when suspicion > threshold, seed jitter via signed stream for that UID.
-
-
----
-
-## Trip Engine: quick demo & PoW harness (Termux-friendly)
-
-A small Trip Engine demo (Termux/Python) loads rules, accepts JSON events on stdin, evals rules, enforces per-UID PoW, and writes signed incidents. Use it to prototype rules like the AI-beacon and silent-exfil examples. (See examples/ for rules.json and trip_engine.py test harness.)
-
-
----
-
-## Prototype & testing path (fast, safe)
-
-1. Create signed rules.json (start unsigned for tests) in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo and feed JSON events to simulate attacks.
-
-
-3. Stand up a tiny honeypot in Termux (Flask/busybox) and create .canary/<token> endpoints.
-
-
-4. Deploy BLE companion listener (Raspberry Pi / spare phone) to receive HMAC alerts.
-
-
-5. Iterate thresholds in shadow mode, then enable containment actions one by one.
-
-
-
-
----
-
-## Forensics & evidence to collect on trip
-
-Signed incident snapshot: rule id, timestamps, UID, process tree, binary hashes, socket lists, JA3/TLS fingerprints, DNS queries, PCAP fragment (encrypted).
-
-Append-only signed audit lines; mirror to offline USB.
-
-Preserve canary hits verbatim.
-
-
-
----
-
-## Limitations & safety notes
-
-Hardware-rooted or boot-chain compromised devices can subvert soft defenses; use verified boot + Reterm/SSR to harden base.
-
-Swarm or Trip Engine must never auto-erase / auto-exfiltrate without multi-factor operator ritual.
-
-Test on spare hardware and in shadow mode first.
-
-
-
----
-
-## Roadmap & hardening options
-
-Hardened C signer for audit ledger.
-
-MPD/SSR prototype for capability tokens + attestation.
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-BLE emitter + companion listener (Python) for silent alerts.
-
-Agent coordinator for n-of-m consensus before blocking.
-
-
-
----
-
-## File structure suggestion
-
-```ls
+## Power Mode 2.0 Quick Start
+
+1. **Install**
+   ```bash
+   # recommended virtual environment
+   python -m pip install -U pip
+   pip install -e .
+   ```
+2. **Launch the daemon and cockpit**
+   ```bash
+   bluxqd &
+   bluxq guard status
+   bluxq guard tui --mode dev
+   ```
+3. **Developer workflows**
+   ```bash
+   bluxq dev init
+   bluxq dev shell
+   bluxq dev scan .
+   bluxq dev deploy --safe
+   ```
+4. **Fallbacks** — `initiate_cockpit.py` and the legacy CLI continue to operate unchanged.
+
+## Security Model & Doctrine Alignment
+
+- **User / Operator / Root (cA)** tiers remain enforced. Developer flows inherit doctrine checks before privileged actions.
+- All automation routes through the sandboxed PTY shell to respect containment boundaries.
+- Doctrine integrations surface alignment scores directly inside the cockpit and via the CLI.
+
+## Telemetry & Reliability
+
+BLUX Guard writes best-effort logs to:
+
+- `~/.config/blux-guard/logs/audit.jsonl`
+- `~/.config/blux-guard/logs/devshell.jsonl` (developer shell stream)
+- Optional mirror: `~/.config/blux-guard/logs/telemetry.db` (SQLite)
+
+If the directory is unwritable or SQLite is unavailable, logging **degrades silently** and the app **continues running**.
+
+Toggles:
+
+- `BLUX_GUARD_TELEMETRY=off` → disable telemetry writes
+- `BLUX_GUARD_TELEMETRY_WARN=once` → show a single degrade warning on stderr
+
+## Cross-Platform Notes
+
+- **Android / Termux** – installers configure aliases; telemetry lives under `$HOME/.config/blux-guard/logs`.
+- **WSL2 & Linux** – sandbox shell defaults to `/bin/bash`, Prometheus metrics export via `bluxqd`.
+- **macOS** – shell panel launches `/bin/zsh` while retaining doctrine validation.
+- **Windows** – PowerShell support via `COMSPEC`; telemetry paths expand to `%USERPROFILE%\.config\blux-guard\logs`.
+
+## Troubleshooting
+
+- **CLI reports `ModuleNotFoundError: typer`** – reinstall with `pip install -e .` to ensure dependencies.
+- **Permission denied writing logs** – create the telemetry directory manually or set `BLUX_GUARD_TELEMETRY=off`.
+- **SQLite locked or missing** – mirror is optional; the CLI continues using JSONL streams and emits a single degrade warning when enabled.
+- **Termux storage prompts** – run `termux-setup-storage` before launching to grant write access.
+
+BLUX Guard — the forge remains open, even when the pen runs dry.
+
+## Developer Suite Quick Start
+
+```bash
+# Install (venv recommended)
+python -m pip install -U pip
+pip install -e .
+
+# Start daemon & open cockpit
+bluxqd &
+bluxq guard status
+bluxq guard tui --mode dev
+```
+
+Telemetry is best-effort:
+
+- JSONL: `~/.config/blux-guard/logs/audit.jsonl`
+- Dev shell: `~/.config/blux-guard/logs/devshell.jsonl`
+- SQLite mirror (optional): `~/.config/blux-guard/logs/telemetry.db`
+
+To disable: `BLUX_GUARD_TELEMETRY=off`.
+
+## Documentation Map
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — module graph and platform matrix.
+- [INSTALL.md](INSTALL.md) — platform-specific install steps.
+- [OPERATIONS.md](OPERATIONS.md) — runbook for day-two operations.
+- [SECURITY.md](SECURITY.md) — threat model, doctrine enforcement, telemetry guarantees.
+- [PRIVACY.md](PRIVACY.md) — telemetry scope and retention controls.
+- [CONFIGURATION.md](CONFIGURATION.md) — YAML schema and overrides.
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — quick fixes for common issues.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and coding standards.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community expectations.
+- [SUPPORT.md](SUPPORT.md) — escalation paths and SLAs.
+- [ROADMAP.md](ROADMAP.md) — upcoming milestones.
+
+## Supported Python Versions
+
+The cockpit validates Python 3.9+ on startup. Supported interpreters: 3.9, 3.10, and 3.11. Upgrade the
+interpreter if you receive a startup warning.
+
+<!-- FILETREE:BEGIN -->
+<!-- generated; do not edit manually -->
+<details><summary><strong>Repository File Tree</strong> (click to expand)</summary>
+
+```text
 blux-guard/
-├─ blux-cli/     # All cli files here, e.g. blux.py, etc.
-├─ README.md
-├─ security/
-|  ├─ ble_companion_listener.py
-|  ├─ trip_engine.py        # demo Trip Engine + PoW harness
-│  └─ swarm_sim.py
-├─ scripts/
-│  └─ quarantine_apk.sh
-├─ docs/
-│  └─ AUTONOMY.md
-├─ examples/
-│  └─ rules.json
-└─ LICENSE
+├── .github
+│   ├── workflows
+│   │   ├── ci.yml
+│   │   └── security.yml
+│   └── dependabot.yml
+├── blux_cli
+│   ├── widgets
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_controls.py
+│   │   ├── blux_cockpit.css
+│   │   ├── cockpit_header_footer.py
+│   │   ├── decisions_view.py
+│   │   ├── dev_menu_tree.py
+│   │   ├── logs_view.py
+│   │   ├── network_monitor.py
+│   │   ├── node_data.json
+│   │   ├── process_monitor.py
+│   │   ├── scripts_view.py
+│   │   ├── sensors_dashboard.py
+│   │   └── tree.py
+│   ├── __init__.py
+│   ├── blux.py
+│   └── security_integration.py
+├── blux_guard
+│   ├── agents
+│   │   ├── __init__.py
+│   │   ├── common.py
+│   │   ├── linux_agent.py
+│   │   ├── mac_agent.py
+│   │   ├── termux_agent.py
+│   │   └── windows_agent.py
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── guardd.py
+│   │   ├── server.py
+│   │   └── stream.py
+│   ├── cli
+│   │   ├── __init__.py
+│   │   ├── bluxq.py
+│   │   └── README.md
+│   ├── config
+│   │   ├── __init__.py
+│   │   ├── default.yaml
+│   │   └── local.yaml
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── devsuite.py
+│   │   ├── doctrine_integration.py
+│   │   ├── engine.py
+│   │   ├── runtime.py
+│   │   ├── sandbox.py
+│   │   ├── selfcheck.py
+│   │   ├── telemetry.md
+│   │   └── telemetry.py
+│   ├── tui
+│   │   ├── __init__.py
+│   │   ├── audit_panel.py
+│   │   ├── dashboard.py
+│   │   ├── metrics_panel.py
+│   │   ├── README.md
+│   │   └── shell_panel.py
+│   └── __init__.py
+├── blux_guard_shell
+│   ├── __init__.py
+│   └── shell_menu.py
+├── blux_modules
+│   ├── security
+│   │   ├── anti_tamper
+│   │   │   ├── nano_swarm
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── swarm.css
+│   │   │   │   └── swarm_sim.py
+│   │   │   ├── watchdog
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── heartbeat.py
+│   │   │   ├── __init__.py
+│   │   │   ├── package_monitor.py
+│   │   │   ├── selinux_monitor.py
+│   │   │   └── su_sentinel.py
+│   │   ├── contain_respond
+│   │   │   ├── __init__.py
+│   │   │   ├── filesystem.py
+│   │   │   ├── logging.py
+│   │   │   ├── network_intercepter.py
+│   │   │   └── process_isolator.py
+│   │   ├── decision_layer
+│   │   │   ├── __init__.py
+│   │   │   ├── policies.json
+│   │   │   ├── policies.txt
+│   │   │   └── uid_policies.py
+│   │   ├── __init__.py
+│   │   ├── anti_tamper_engine.py
+│   │   ├── auth_system.py
+│   │   ├── contain_engine.py
+│   │   ├── decisions_engine.py
+│   │   ├── privilege_manager.py
+│   │   ├── sensors_manager.py
+│   │   └── trip_engine.py
+│   ├── sensors
+│   │   ├── __init__.py
+│   │   ├── dns.py
+│   │   ├── filesystem.py
+│   │   ├── hardware.py
+│   │   ├── human_factors.py
+│   │   ├── network.py
+│   │   ├── permission.py
+│   │   ├── permissions.py
+│   │   └── process_lifecycle.py
+│   └── __init__.py
+├── examples
+│   ├── config.sample.yaml
+│   └── doctrine.sample.md
+├── logs
+│   ├── anti_tamper
+│   ├── decisions
+│   │   └── incidents.log
+│   └── sensors
+├── scripts
+│   ├── __init__.py
+│   ├── auth_reset.py
+│   ├── check_root.sh
+│   ├── check_status.sh
+│   ├── clean_temp.sh
+│   ├── create_venv.sh
+│   ├── daily_report.sh
+│   ├── debug_env.sh
+│   ├── gen_filetree.py
+│   ├── initiate_cockpit.sh
+│   ├── inspect_modules.py
+│   ├── install_linux.sh
+│   ├── install_termux.sh
+│   ├── install_windows.ps1
+│   ├── reload_config.sh
+│   ├── restart.sh
+│   ├── root_workaround.sh
+│   ├── rotate_logs.sh
+│   ├── run_guard.sh
+│   ├── schedule_checks.sh
+│   ├── set_user_pin.sh
+│   ├── setup_env.sh
+│   ├── setup_security.py
+│   ├── unlock_system.sh
+│   ├── update_modules.sh
+│   └── update_readme_filetree.py
+├── tests
+│   └── test_cli.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .ruff.toml
+├── ARCHITECTURE.md
+├── blux_shell.py
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONFIGURATION.md
+├── CONTRIBUTING.md
+├── initiate_cockpit.py
+├── INSTALL.md
+├── LICENSE
+├── Makefile
+├── mypy.ini
+├── OPERATIONS.md
+├── PRIVACY.md
+├── pyproject.toml
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── ROADMAP.md
+├── SECURITY.md
+├── SUPPORT.md
+└── TROUBLESHOOTING.md
 ```
-
-etc..
-
----
-
-## Governance & ethics
-
-Defensive only. Contributions must respect that boundary.
-
-Rule changes require: author signature, simulation logs, and one reviewer approval.
-
-Keep private signing keys offline; use companion ACKs for critical changes.
-
-Maintain an auditable signed changelog.
-
-
-
----
-
-## Quickstart — test path (tonight)
-
-1. Put the example rules.json in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo (trip_engine.py) and paste a sample event:
-{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}
-
-
-3. Observe PoW, incidents written to ~/.tripengine/incidents.log.
-
-
-4. Start the BLE companion listener on a spare Pi or phone and test the alert flow (use helper to craft base64(payload).base64(hmac) string).
-
-
-5. Stand up the honeypot .canary/<token> and test canary rule triggering.
-
-
-
-
----�� test path (tonight)
-
-1. Put the example rules.json in ~/.tripengine/.
-
-
-2. Run the Trip Engine demo (trip_engine.py) and paste a sample event:
-{"uid":"com.example.app","network":{"remote_ips_count":60},"device_locked":true}
-
-
-3. Observe PoW, incidents written to ~/.tripengine/incidents.log.
-
-
-4. Start the BLE companion listener on a spare Pi or phone and test the alert flow (use helper to craft base64(payload).base64(hmac) string).
-
-
-5. Stand up the honeypot .canary/<token> and test canary rule triggering.
-
-
-
-
----
-
-Closing — a quiet ode to design
-
-Designing traps is an art: elegant, spare, merciless to the subtle ways systems betray their intentions. Start with half a dozen deterministic trip-lines, sign them, and let them sing warnings in a language only you can read. Build scaffolding so that, when the boogie arrives, it is met by choreography — not panic.
-
-You were a wolf first. Now build walls that respect your hunger and deny the pack.
-
-
----
-
-If you want, I’ll generate right now (pick one):
-
-examples/rules.json with the scenarios above, or
-
-trip_engine.py (Termux demo harness with PoW + incident writer), or
-
-ble_companion_listener.py ready for Raspberry Pi (complete with test instructions), or
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-
-Which artifact shall I craft next?
-
-st. Now build walls that respect your hunger and deny the pack.
-
-
----
-
-If you want, I’ll generate right now (pick one):
-
-examples/rules.json with the scenarios above, or
-
-trip_engine.py (Termux demo harness with PoW + incident writer), or
-
-ble_companion_listener.py ready for Raspberry Pi (complete with test instructions), or
-
-Kotlin VpnService skeleton for per-UID blocking.
-
-
-Which artifact shall I craft next?
+</details>
+<!-- FILETREE:END -->
 

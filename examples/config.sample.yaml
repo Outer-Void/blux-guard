@@ -1,0 +1,10 @@
+sandbox:
+  shell: /bin/bash
+  network: restricted
+telemetry:
+  enabled: true
+  warn_once: true
+  log_dir: ~/.config/blux-guard/logs
+api:
+  host: 127.0.0.1
+  port: 8000

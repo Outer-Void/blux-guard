@@ -1,0 +1,11 @@
+name: Security Scan
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * 1'
+
+jobs:
+  codeql:
+    uses: github/codeql-action/.github/workflows/codeql.yml@v3
