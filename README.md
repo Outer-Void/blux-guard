@@ -314,6 +314,14 @@ To disable: `BLUX_GUARD_TELEMETRY=off`.
 The cockpit validates Python 3.9+ on startup. Supported interpreters: 3.9, 3.10, and 3.11. Upgrade the
 interpreter if you receive a startup warning.
 
+## Licensing
+
+Blux Guard is dual-licensed. Open-source use is provided under the [Apache License 2.0](LICENSE-APACHE), and commercial use requires a separate agreement described in [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL).
+
+Under Apache-2.0 you may use, modify, and redistribute the software for open and internal purposes, provided that you preserve notices, include the license, and accept the standard disclaimers of warranty and liability.
+
+Commercial use—such as embedding in paid products, offering hosted services, or other monetized deployments—requires a commercial license from the maintainers. Please review [COMMERCIAL.md](COMMERCIAL.md) for examples and contact **theoutervoid@outlook.com** to arrange commercial terms.
+
 <!-- FILETREE:BEGIN -->
 <!-- generated; do not edit manually -->
 <details><summary><strong>Repository File Tree</strong> (click to expand)</summary>
