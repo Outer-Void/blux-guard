@@ -379,7 +379,7 @@ Upgrade the interpreter if you receive a startup warning.
 
 ## 📞 Contact
 
-- **Email:** theoutervoid@outlook.com
+- **Email:** outervoid.blux@gmail.com
 - **GitHub:** [github.com/Outer-Void](https://github.com/Outer-Void)
 
 ---
