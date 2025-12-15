@@ -179,6 +179,14 @@ The scripts/ directory contains utilities for:
 · Debugging: debug_env.sh, inspect_modules.py
 · Automation: daily_report.sh, schedule_checks.sh
 
+Run the top-level helpers to keep these scripts healthy and executable:
+
+```
+make perms          # normalize executable bits from scripts/perms_manifest.txt
+make audit-scripts  # verify shebangs, CRLF, and manifest coverage
+make smoke          # light import + CLI smoke checks (includes audit-scripts)
+```
+
 ---
 
 ## 7. Governance & Ethics

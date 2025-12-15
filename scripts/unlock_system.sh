@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard System Unlock
 # Triggers unlock routine with comprehensive authentication
 # Cross-platform: Linux, macOS, Windows (Git Bash), Termux
@@ -6,6 +6,7 @@
 # Author: Outer Void Team
 
 set -euo pipefail  # Strict error handling
+IFS=$'\n\t'
 
 # Script directory resolution that works across platforms
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

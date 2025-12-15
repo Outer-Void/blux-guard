@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Debug Environment
 # Launches a testing TUI or logging sandbox
+set -euo pipefail
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -12,12 +14,13 @@ cd "$BLUX_ROOT"
 
 # Source environment
 if [ -f "$SCRIPT_DIR/.blux_env" ]; then
+    # shellcheck source=/dev/null
     source "$SCRIPT_DIR/.blux_env"
 fi
 
 # Check for debug mode
 export BLUX_DEBUG=1
-export PYTHONPATH="$BLUX_ROOT:$PYTHONPATH"
+export PYTHONPATH="$BLUX_ROOT:${PYTHONPATH:-}"
 
 # Launch appropriate debug interface
 case "${1:-}" in

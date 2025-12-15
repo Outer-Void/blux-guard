@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Privilege Workarounds
 # Provides fallback if certain tasks require elevated privileges
 # Cross-platform: Linux, macOS, Windows (Admin), Termux
@@ -6,6 +6,7 @@
 # Author: Outer Void Team
 
 set -euo pipefail  # Strict error handling
+IFS=$'\n\t'
 
 # Script directory resolution
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

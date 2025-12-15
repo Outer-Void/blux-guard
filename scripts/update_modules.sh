@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Modules Update
 # Updates blux_modules and pulls latest security & sensor code
 # Cross-platform compatible: Linux, macOS, Windows (Git Bash), Termux
@@ -6,6 +6,7 @@
 # Author: Outer Void Team
 
 set -euo pipefail  # Exit on error, undefined variables, pipe failures
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"

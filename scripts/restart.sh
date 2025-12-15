@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
 # Ensure this script is executable: chmod +x restart.sh
 
 # Replace with the actual commands to start your processes

@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Daily Report
 # Summarizes logs and events, sends alert or prints to console
+set -euo pipefail
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"
