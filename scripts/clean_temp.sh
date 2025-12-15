@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Temp Cleaner
 # Removes temp files, old cache, .pyc files
+set -euo pipefail
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -25,11 +27,13 @@ find . -name ".~lock.*" -delete
 
 # Clean backup directories older than 30 days
 echo "Cleaning old backups..."
-find "./backups" -type d -mtime +30 -exec rm -rf {} + 2>/dev/null
+if [ -d "./backups" ]; then
+    find "./backups" -type d -mtime +30 -exec rm -rf {} + 2>/dev/null
+fi
 
 # Clear system temp if accessible
 if [ -d "/tmp" ]; then
-    find "/tmp" -name "blux_*" -mtime +1 -delete 2>/dev/null
+    find "/tmp" -name "blux_*" -mtime +1 -delete 2>/dev/null || true
 fi
 
 echo "✅ Cleanup complete"

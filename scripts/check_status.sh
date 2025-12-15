@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard System Status Check
 # Shows health of all modules (security engines, sensors, logs, etc)
+set -euo pipefail
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -10,6 +12,7 @@ echo "============================"
 
 # Source environment
 if [ -f "$SCRIPT_DIR/.blux_env" ]; then
+    # shellcheck source=/dev/null
     source "$SCRIPT_DIR/.blux_env"
 fi
 

@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Config Reload
 # Forces reload of /rules/rules.json and sensor configs
+set -euo pipefail
+IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BLUX_ROOT="$(dirname "$SCRIPT_DIR")"

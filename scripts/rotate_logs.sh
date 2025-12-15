@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BLUX Guard Log Rotation
 # Rotates /logs subfolders for anti-tamper, decisions, sensors
 # Cross-platform: Linux, macOS, Windows (Git Bash), Termux
@@ -6,6 +6,7 @@
 # Author: Outer Void Team
 
 set -euo pipefail  # Strict error handling
+IFS=$'\n\t'
 
 # Script directory resolution
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

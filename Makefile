@@ -1,4 +1,4 @@
-.PHONY: dev lint test tui
+.PHONY: dev lint test tui perms audit-scripts smoke
 
 dev:
 	python -m pip install -U pip && pip install -e .[dev] || pip install -e .
@@ -12,4 +12,15 @@ test:
 	pytest
 
 tui:
-	bluxq guard tui --mode dev
+        bluxq guard tui --mode dev
+
+perms:
+        bash scripts/fix_perms.sh
+
+audit-scripts:
+        python scripts/audit_scripts.py
+
+smoke: audit-scripts
+        python -c "import blux_guard"
+        python -m blux_guard.cli.bluxq --help
+        bash scripts/fix_perms.sh --check
