@@ -15,9 +15,11 @@ try:
 except Exception:  # pragma: no cover - defensive import guard
     legacy_cli = None
 
+from blux_guard import audit, doctor
 from blux_guard.core import devsuite, runtime, sandbox, telemetry
 from blux_guard.core import selfcheck as core_selfcheck
-from blux_guard.tui import dashboard
+from blux_guard.integrations import doctrine as doctrine_integration
+from blux_guard.tui import app as cockpit_app
 
 app = typer.Typer(help="BLUX Guard Developer Suite (Quantum namespace)")
 
@@ -95,11 +97,30 @@ def guard_status() -> None:
     typer.echo(json.dumps(status, indent=2, sort_keys=True))
 
 
+@guard_app.command("scan")
+def guard_scan(target: pathlib.Path = typer.Argument(pathlib.Path("."))) -> None:
+    """Run a guard scan via dev suite."""
+
+    _run_async("guard scan", lambda: devsuite.run_scan(target))
+
+
+@guard_app.command("watch")
+def guard_watch(target: pathlib.Path = typer.Argument(pathlib.Path("."))) -> None:
+    """Continuously scan a target (placeholder watch mode)."""
+
+    audit.record("cli.watch", actor="cli", payload={"target": str(target)})
+    _run_async("guard watch", lambda: devsuite.run_scan(target))
+
+
 @guard_app.command("tui")
-def guard_tui(mode: str = typer.Option("secure", help="TUI mode: dev|secure|ops")) -> None:
+def guard_tui(
+    mode: str = typer.Option("secure", help="TUI mode: dev|secure|ops"),
+    correlation_id: str = typer.Option(None, help="Correlation id to propagate."),
+) -> None:
     """Launch the Textual cockpit."""
 
-    _run_async("guard tui", lambda: dashboard.run_dashboard(mode=mode))
+    cid = correlation_id or audit.generate_correlation_id()
+    _run_async("guard tui", lambda: cockpit_app.run_cockpit(mode=mode, correlation_id=cid))
 
 
 @guard_app.command("self-check")
@@ -116,6 +137,67 @@ def guard_self_check() -> None:
             f"- {item['name']}: {item['status'].upper()} -- {item['detail']}"
         )
     typer.echo(f"Overall status: {results['overall'].upper()}")
+
+
+@guard_app.command("doctor")
+def guard_doctor() -> None:
+    """Run environment diagnostics."""
+
+    report = doctor.run_doctor()
+    typer.echo(json.dumps(report, indent=2))
+
+
+@guard_app.command("verify")
+def guard_verify() -> None:
+    """Verify configuration and audit log paths."""
+
+    report = doctor.run_verify()
+    typer.echo(json.dumps(report, indent=2))
+
+
+@guard_app.command("rules")
+def guard_rules() -> None:
+    """Show doctrine rule status."""
+
+    policies = doctrine_integration.fetch_policies()
+    safe_mode = doctrine_integration.safe_mode_active()
+    audit.record(
+        "cli.rules",
+        actor="cli",
+        payload={"count": len(policies), "safe_mode": safe_mode},
+    )
+    typer.echo(json.dumps({"policies": policies, "safe_mode": safe_mode}, indent=2))
+
+
+@guard_app.command("incidents")
+def guard_incidents(limit: int = typer.Option(10, help="Number of entries")) -> None:
+    """Print recent warning/error audit entries."""
+
+    path = audit.audit_log_path()
+    if not path.exists():
+        typer.echo("No audit log present", err=True)
+        return
+    lines = path.read_text(encoding="utf-8").splitlines()[-limit:]
+    for line in lines:
+        typer.echo(line)
+
+
+@guard_app.command("export")
+def guard_export() -> None:
+    """Export diagnostic bundle using cockpit helpers."""
+
+    status = telemetry.collect_status_sync()
+    audit.record("cli.export", actor="cli", payload=status)
+    typer.echo(json.dumps(status, indent=2))
+
+
+@guard_app.command("install")
+def guard_install(target: str = typer.Option("linux", help="linux|termux")) -> None:
+    """Hint the operator to platform installer scripts."""
+
+    script = f"scripts/install_{target}.sh"
+    typer.echo(f"Run: bash {script}")
+    audit.record("cli.install", actor="cli", payload={"target": target})
 
 
 @app.command("legacy")

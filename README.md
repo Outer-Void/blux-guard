@@ -112,6 +112,22 @@ python3 initiate_cockpit.py
 python3 blux_cli/blux.py status
 ```
 
+### Unified Operator Flow
+
+```bash
+# Preferred cockpit launch (Textual)
+python -m blux_guard.cli.bluxq guard tui
+
+# Quick health checks
+python -m blux_guard.cli.bluxq guard status
+python -m blux_guard.cli.bluxq guard doctor
+
+# Export telemetry snapshot
+python -m blux_guard.cli.bluxq guard export
+```
+
+Legacy entry points remain available, but the `bluxq guard` namespace is the single supported path that propagates correlation IDs, writes unified audit JSONL entries, and exposes the DevShell panel.
+
 3.3 Authentication
 
 · First run will prompt for PIN setup
