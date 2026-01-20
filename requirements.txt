@@ -6,6 +6,7 @@ cryptography ~= 46.0.3
 textual ~= 6.3.0
 textual-dev ~= 1.8.0
 rich ~= 14.2.0
+jsonschema ~= 4.23.0
 
 # Database
 pysqlite3 ~= 0.5.4

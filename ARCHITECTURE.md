@@ -3,11 +3,11 @@
 ## High-Level Overview
 
 BLUX Guard combines legacy protection engines with the new Developer Suite cockpit. The system keeps the
-original `blux_modules` security pipeline while routing modern workflows through the developer-oriented
+original security pipeline while routing modern workflows through the developer-oriented
 runtime:
 
-1. **Interface Layer** — `blux_cli/` legacy commands, `blux_guard/cli/bluxq.py` Quantum CLI, and
-   Textual TUI components under `blux_guard/tui/`.
+1. **Interface Layer** — `blux_guard/cli/bluxq.py` Quantum CLI and Textual TUI components under
+   `blux_guard/tui/`.
 2. **Execution Layer** — sandbox orchestration from `blux_guard/core/sandbox.py`, development flows in
    `blux_guard/core/devsuite.py`, and doctrine alignment checks provided by
    `blux_guard/core/doctrine_integration.py`.
@@ -32,7 +32,7 @@ bluxq → runtime.ensure_supported_python → sandbox.enforce → doctrine.check
 ## Module Relationships
 
 - `blux_guard/core/__init__.py` exposes the developer runtime modules.
-- Legacy sensors and trip engines in `blux_modules/` remain the authoritative signal generators.
+- Legacy sensors and trip engines are handled through the guard receipt engine and doctrine workflows.
 - Agents call back into `telemetry` so all platforms share a unified audit surface.
 
 ## Platform Matrix

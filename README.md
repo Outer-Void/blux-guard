@@ -52,7 +52,7 @@ Sensors → Trip Engine → Decision Layer → Containment → Operator
 ### 5. **Integrity & Anti-Tamper**
 - Watchdog with self-heartbeat monitoring
 - Signed binaries and manifests
-- Alerts on package manager changes, su binaries, SELinux modifications
+- Alerts on package manager changes, privilege escalation binaries, SELinux modifications
 
 ---
 
@@ -72,17 +72,14 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### First Run
+### CLI Usage
 
 ```bash
-# Start with the interactive shell
-python3 blux_guard_shell/shell_menu.py
+# Start with the CLI
+bluxq guard status
 
-# Or use the graphical cockpit
-python3 initiate_cockpit.py
-
-# Or use the CLI
-python3 blux_cli/blux.py status
+# Evaluate a request envelope and emit a receipt
+blux-guard evaluate --request-envelope examples/envelope.json --token TOKEN_VALUE
 ```
 
 ### Power Mode 2.0 (Recommended)
@@ -106,14 +103,6 @@ bluxq dev shell       # Open developer shell
 bluxq dev scan .      # Scan current directory
 bluxq dev deploy --safe  # Deploy with safety checks
 ```
-
-### Authentication
-
-- First run will prompt for PIN setup
-- Use the same PIN across all interfaces
-- Emergency reset available via shell menu
-
----
 
 ## 🎯 Trip Engine Examples
 
@@ -145,59 +134,6 @@ BLUX Guard uses deterministic, time-bounded, and auditable trip conditions:
 - Freeze/snapshot suspect processes
 - Reduce CPU/QoS for suspect UIDs
 - All actions signed and operator-approved
-
----
-
-## 📦 Core Components
-
-### Security Modules (`blux_modules/security/`)
-- **auth_system.py** - Authentication and password management
-- **privilege_manager.py** - Root detection and privilege escalation
-- **trip_engine.py** - Rule evaluation and incident detection
-- **decisions_engine.py** - Action escalation and policy enforcement
-- **anti_tamper_engine.py** - System integrity monitoring
-- **sensors_manager.py** - Unified sensor data collection
-
-### Sensor Suite (`blux_modules/sensors/`)
-- **network.py** - Network connection monitoring
-- **dns.py** - DNS query analysis
-- **process_lifecycle.py** - Process tracking
-- **filesystem.py** - File system monitoring
-- **hardware.py** - USB/BT/charging detection
-- **human_factors.py** - User behavior analysis
-- **permission.py** - Permission change detection
-
-### User Interfaces
-- **blux_guard_shell/** - Interactive shell menu system
-- **blux_cli/** - Command-line interface with TUI widgets
-- **initiate_cockpit.py** - Graphical cockpit interface
-- **blux_shell.py** - Shell launcher wrapper
-
-### Anti-Tamper System (`blux_modules/security/anti_tamper/`)
-- **nano_swarm/** - Distributed security monitoring
-- **watchdog/** - System heartbeat and integrity checks
-- **package_monitor.py** - Package manager surveillance
-- **selinux_monitor.py** - SELinux policy monitoring
-- **su_sentinel.py** - Root access detection
-
----
-
-## 🛠️ Operational Scripts
-
-The `scripts/` directory contains utilities for:
-
-- **Security setup:** `setup_security.py`, `set_user_pin.sh`
-- **System maintenance:** `rotate_logs.sh`, `clean_temp.sh`
-- **Debugging:** `debug_env.sh`, `inspect_modules.py`
-- **Automation:** `daily_report.sh`, `schedule_checks.sh`
-
-Run the top-level helpers to keep these scripts healthy and executable:
-
-```bash
-make perms          # normalize executable bits from scripts/perms_manifest.txt
-make audit-scripts  # verify shebangs, CRLF, and manifest coverage
-make smoke          # light import + CLI smoke checks (includes audit-scripts)
-```
 
 ---
 
@@ -299,10 +235,17 @@ termux-setup-storage
 
 ## 🔒 Security Model & Doctrine Alignment
 
-- **User / Operator / Root (cA)** tiers remain enforced
+- **User / Operator / Elevated (cA)** tiers remain enforced
 - Developer flows inherit doctrine checks before privileged actions
 - All automation routes through sandboxed PTY shell to respect containment boundaries
 - Doctrine integrations surface alignment scores directly inside the cockpit and via CLI
+
+## 🧾 Receipt Enforcement (No Elevation)
+
+BLUX Guard issues signed receipts that describe allowed commands or paths, plus explicit sandbox
+and network constraints. Enforcement is intentionally non-privileged: receipts describe what an
+agent may do, and downstream runners can enforce those rules without requiring any elevation.
+If you need broader access, adjust the request envelope constraints instead of escalating.
 
 ---
 
@@ -371,8 +314,7 @@ Upgrade the interpreter if you receive a startup warning.
 ## 💬 Getting Help
 
 - Check individual module docstrings for usage details
-- Review `scripts/` for operational utilities
-- Use the interactive shell for guided operation
+- Use the CLI for guided operation
 - See [SUPPORT.md](SUPPORT.md) for escalation paths
 
 ---

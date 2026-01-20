@@ -24,6 +24,8 @@ jobs:
       - name: Install tooling
         run: |
           pip install ruff mypy pytest
+      - name: Physics check
+        run: scripts/physics_check.sh
       - name: Ruff
         run: ruff check .
       - name: Mypy

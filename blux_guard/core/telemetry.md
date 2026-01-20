@@ -21,7 +21,7 @@ All writes are best-effort:
 ## Rotation & Hygiene
 
 - Use the SQLite database to batch-export events when required (`sqlite-utils rows telemetry.db events`).
-- Rotate JSONL files with existing scripts under `scripts/rotate_logs.sh` or custom cron jobs.
+- Rotate JSONL files with your preferred log rotation tooling or custom cron jobs.
 - Delete or archive the JSONL/SQLite files safely; new files will be created automatically on the next write attempt.
 
 ## Privacy

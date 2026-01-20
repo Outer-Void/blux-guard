@@ -33,7 +33,7 @@ api:
 ## Doctrine Integration
 
 `core/doctrine_integration.py` reads doctrine manifests from `/blux-doctrine`. Provide environment-specific
-paths with `BLUX_GUARD_DOCTRINE_ROOT` if the directory is elsewhere.
+paths with `BLUX_GUARD_DOCTRINE_DIR` if the directory is elsewhere.
 
 ## Examples
 

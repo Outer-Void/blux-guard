@@ -11,7 +11,7 @@ _LOG_DIR = Path(os.environ.get("BLUX_GUARD_LOG_DIR", _BASE_DIR / "logs"))
 
 
 def config_dir() -> Path:
-    """Return the root configuration directory."""
+    """Return the primary configuration directory."""
 
     return _BASE_DIR
 
