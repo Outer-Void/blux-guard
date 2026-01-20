@@ -6,9 +6,6 @@ BLUX Guard ships with defaults under `blux_guard/config/default.yaml` and option
 ## YAML Schema
 
 ```yaml
-sandbox:
-  shell: /bin/bash       # Override per-platform shell
-  network: restricted    # or "open"
 telemetry:
   log_dir: ~/.config/blux-guard/logs
   enabled: true
@@ -24,17 +21,6 @@ api:
 2. If `config/local.yaml` exists, keys merge over defaults without altering the tracked file.
 3. Environment variables take precedence when provided (e.g., `BLUX_GUARD_LOG_DIR`).
 
-## Platform-Specific Tips
-
-- **Termux** — set `sandbox.shell` to `/data/data/com.termux/files/usr/bin/bash` if needed.
-- **Windows** — use `sandbox.shell: powershell` and ensure `pyyaml` handles Windows paths with double backslashes.
-- **macOS** — add `sandbox.shell: /bin/zsh` for Zsh environments.
-
-## Doctrine Integration
-
-`core/doctrine_integration.py` reads doctrine manifests from `/blux-doctrine`. Provide environment-specific
-paths with `BLUX_GUARD_DOCTRINE_DIR` if the directory is elsewhere.
-
 ## Examples
 
-See the `examples/` directory for sample configuration snippets and doctrine templates.
+See the `examples/` directory for sample configuration snippets.

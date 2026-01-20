@@ -8,13 +8,11 @@ The Cockpit provides a unified operator view for BLUX Guard across CLI and TUI s
 
 # Navigation
 
-- **Home**: Overview banner, current mode (secure/dev/ops), quick links to start scans or open the DevShell.
+- **Home**: Overview banner, current mode (secure/dev/ops), quick links to start scans.
 - **Telemetry**: Metrics, process view, YARA scans, credentials audit, and audit chain verification with refresh hotkeys.
-- **Rules**: Doctrine policy summaries and rule health. Shows last evaluation and safe-mode state.
+- **Rules**: Rule summaries and health indicators.
 - **Incidents**: Aggregated audit timeline filtered to warnings/errors plus last export paths.
-- **DevShell**: PTY/subprocess hybrid shell with command logging to `~/.config/blux-guard/logs/devshell.jsonl` and audit correlation.
-
-Each screen emits audit events on entry/exit and on key actions (scan, export, command execution).
+Each screen emits audit events on entry/exit and on key actions (scan, export).
 
 # Data Contracts
 
@@ -26,14 +24,9 @@ Each screen emits audit events on entry/exit and on key actions (scan, export, c
 
 1. **Launch**: Operator runs `bluxq guard tui`. CLI creates a correlation_id, records `tui.launch`, and starts the Textual app (`blux_guard.tui.app.CockpitApp`).
 2. **Telemetry Refresh**: Hotkeys trigger panel refresh; each refresh logs `tui.refresh` with the screen identifier.
-3. **Rules/Doctrine**: Rule view loads doctrine via `blux_guard.integrations.doctrine`, logging load status and any missing policy warnings.
+3. **Rules**: Rule view surfaces status summaries and warning hints.
 4. **Incidents/Audit**: Timeline reads audit JSONL and shows warnings/errors. Exports write bundles via `security_cockpit.export_diagnostics` and emit `tui.export` events.
-5. **DevShell**: Commands execute via PTY when available, otherwise subprocess. Each command writes a devshell log entry and an audit event with summary output.
-6. **Doctor/Verify**: CLI `doctor` and `verify` run environment and config checks, emitting audit events and returning non-zero on failure.
-
-# Safe Mode
-
-When doctrine policies or registry keys are missing, Guard defaults to **observe-only**: no containment actions are executed. Screens and CLI commands surface the safe-mode state in their headings.
+5. **Doctor/Verify**: CLI `doctor` and `verify` run environment and config checks, emitting audit events and returning non-zero on failure.
 
 # Compatibility
 

@@ -8,8 +8,10 @@
 - Report violations and constraint mismatches without attempting escalation.
 
 ## Explicit Non-Goals
-- No root requirement or privileged escalation mechanisms of any kind.
+- No privilege elevation mechanisms of any kind.
 - No kernel hooks, kernel-level modules, or privileged network/OS controls.
-- No token issuance, minting, or authentication logic.
-- No policy or ethics reasoning; doctrine and cA decisions live elsewhere.
+- No token issuance or verification logic.
+- No policy or ethics reasoning.
 - No changes to blux-ecosystem contracts.
+- Guard does not run tools or spawn shells.
+- Guard can be bypassed by design but emits an audit log entry when a bypass signal is provided.

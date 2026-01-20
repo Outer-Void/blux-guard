@@ -11,9 +11,8 @@ from typing import Optional
 import typer
 
 from blux_guard import audit, doctor
-from blux_guard.core import devsuite, receipt as receipt_engine, runtime, sandbox, telemetry
+from blux_guard.core import devsuite, receipt as receipt_engine, runtime, telemetry
 from blux_guard.core import selfcheck as core_selfcheck
-from blux_guard.integrations import doctrine as doctrine_integration
 from blux_guard.tui import app as cockpit_app
 
 app = typer.Typer(help="BLUX Guard Developer Suite (Quantum namespace)")
@@ -150,20 +149,6 @@ def guard_verify() -> None:
     typer.echo(json.dumps(report, indent=2))
 
 
-@guard_app.command("rules")
-def guard_rules() -> None:
-    """Show doctrine rule status."""
-
-    policies = doctrine_integration.fetch_policies()
-    safe_mode = doctrine_integration.safe_mode_active()
-    audit.record(
-        "cli.rules",
-        actor="cli",
-        payload={"count": len(policies), "safe_mode": safe_mode},
-    )
-    typer.echo(json.dumps({"policies": policies, "safe_mode": safe_mode}, indent=2))
-
-
 @guard_app.command("incidents")
 def guard_incidents(limit: int = typer.Option(10, help="Number of entries")) -> None:
     """Print recent warning/error audit entries."""
@@ -191,14 +176,11 @@ def guard_evaluate(
     request_envelope: pathlib.Path = typer.Option(
         ..., "--request-envelope", help="Envelope JSON payload."
     ),
-    token: Optional[list[str]] = typer.Option(
-        None, "--token", help="Capability token (repeatable)."
+    capability_ref: Optional[list[str]] = typer.Option(
+        None, "--capability-ref", help="Capability reference (repeatable)."
     ),
     discernment: Optional[pathlib.Path] = typer.Option(
         None, "--discernment", help="Optional discernment report JSON."
-    ),
-    revocations: Optional[pathlib.Path] = typer.Option(
-        None, "--revocations", help="Optional revocation list JSON."
     ),
 ) -> None:
     """Evaluate an envelope and emit a guard receipt."""
@@ -206,25 +188,9 @@ def guard_evaluate(
     receipt = receipt_engine.evaluate_from_files(
         request_envelope,
         discernment,
-        tokens=token or None,
-        revocations_path=revocations,
+        capability_refs=capability_ref or None,
     )
     typer.echo(json.dumps(receipt.to_dict(), indent=2, sort_keys=True))
-
-
-@guard_app.command("verify-receipt")
-def guard_verify_receipt(
-    receipt_path: pathlib.Path = typer.Argument(..., help="Guard receipt JSON payload.")
-) -> None:
-    """Verify a guard receipt for integrity."""
-
-    receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
-    ok, reason = receipt_engine.verify_receipt(receipt_payload)
-    payload = {"ok": ok, "reason": reason}
-    if not ok:
-        typer.echo(json.dumps(payload), err=True)
-        raise typer.Exit(code=2)
-    typer.echo(json.dumps(payload))
 
 
 @guard_app.command("install")
@@ -241,13 +207,6 @@ def dev_init(path: pathlib.Path = typer.Argument(pathlib.Path.cwd(), help="Proje
 
     _run_async("dev init", lambda: devsuite.initialise_workspace(path))
     typer.echo(f"Workspace initialised at {path}")
-
-
-@dev_app.command("shell")
-def dev_shell() -> None:
-    """Launch an interactive sandboxed shell."""
-
-    _run_async("dev shell", sandbox.launch_interactive_shell)
 
 
 @dev_app.command("build")
@@ -269,13 +228,6 @@ def dev_deploy(safe: bool = typer.Option(True, "--safe/--force")) -> None:
     """Perform a guarded deployment."""
 
     _run_async("dev deploy", lambda: devsuite.run_deploy(safe=safe))
-
-
-@dev_app.command("doctrine")
-def dev_doctrine(check: bool = typer.Option(True, "--check/--skip")) -> None:
-    """Run doctrine alignment checks."""
-
-    _run_async("dev doctrine", lambda: devsuite.run_doctrine_check(check=check))
 
 
 app.add_typer(guard_app, name="guard")

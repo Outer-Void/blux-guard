@@ -5,13 +5,11 @@ BLUX Guard stores telemetry locally on the operator's device. No automatic uploa
 ## Data Collected
 
 - Event metadata: timestamps, action names, actor identifiers, severity levels.
-- Optional payloads describing resource usage, command arguments (sanitized), or doctrine results.
-- Dev shell transcripts routed through the sandbox stream when enabled.
+- Optional payloads describing resource usage or receipt metadata (sanitized).
 
 ## Storage Locations
 
 - JSONL audit log: `~/.config/blux-guard/logs/audit.jsonl`
-- Developer shell log: `~/.config/blux-guard/logs/devshell.jsonl`
 - SQLite mirror: `~/.config/blux-guard/logs/telemetry.db`
 
 ## Controls
