@@ -23,6 +23,10 @@ ALLOW_PHRASES = (
     "non root",
 )
 
+ALLOWLIST_DOCS = {
+    "LICENSE-APACHE",
+}
+
 ROOT_REQUIREMENT_PATTERNS = (
     r"\broot required\b",
     r"\brequires root\b",
@@ -37,12 +41,33 @@ ROOT_REQUIREMENT_PATTERNS = (
 
 PROHIBITED_WORD_PATTERNS = (
     r"\bsudo\b",
+    r"\bsu\s",
+    r"\bsetcap\b",
+    r"\bcap_net_admin\b",
+    r"\biptables\b",
+    r"\bnft\b",
+    r"\bmount\s",
+    r"\bumount\b",
+    r"\bchroot\b",
+    r"\bsysctl\b",
+    r"\bsystemctl\b",
+    r"\bservice\s",
+    r"/dev/kmem",
+    r"kernel module",
+    r"\binsmod\b",
+    r"\bmodprobe\b",
     r"\bdoas\b",
     r"\bpkexec\b",
     r"\bsetuid\b",
     r"\bcap_sys_admin\b",
     r"chmod\s+4755",
     r"\bchown\s+root\b",
+    r"\bissue token\b",
+    r"\bmint token\b",
+    r"\bverify token\b",
+    r"\bcapability token signing\b",
+    r"\bjwt\b",
+    r"\bed25519 sign\b",
 )
 
 
@@ -73,15 +98,16 @@ def _scan_text(path: Path, text: str) -> list[str]:
     return violations
 
 
-def _scan_docs_and_scripts(repo_root: Path) -> list[str]:
+def _scan_repo(repo_root: Path) -> list[str]:
     violations: list[str] = []
     for rel in _git_files():
         path = Path(rel)
         if path.name == "physics_no_root.py":
             continue
-        if path.suffix.lower() == ".md" or path.parts[:1] == ("scripts",):
-            content = (repo_root / path).read_text(encoding="utf-8")
-            violations.extend(_scan_text(path, content))
+        if rel in ALLOWLIST_DOCS:
+            continue
+        content = (repo_root / path).read_text(encoding="utf-8", errors="ignore")
+        violations.extend(_scan_text(path, content))
     return violations
 
 
@@ -106,7 +132,7 @@ def _validate_example_receipt(repo_root: Path) -> list[str]:
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
-    violations = _scan_docs_and_scripts(repo_root)
+    violations = _scan_repo(repo_root)
     violations.extend(_validate_example_receipt(repo_root))
     if violations:
         print("Blocked: userland-only enforcement violations detected")

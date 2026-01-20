@@ -14,6 +14,9 @@
 BLUX Guard is a discreet, layered security defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices**. It operates transparently, remains fully auditable, and stays under operator control at all times.
 
 BLUX Guard provides protocol enforcement + userland constraints, and **no root required** for setup or operation.
+Enforcement stays safely in userland by applying receipt-defined constraints to Guard actions
+and relying on non-privileged checks (filesystem scoping, process boundaries, and explicit
+operator confirmations) instead of any elevated system controls.
 
 **Core Principles:**
 - 🔒 Defensive-only security with no offensive payloads
@@ -215,6 +218,7 @@ termux-setup-storage
 | [PRIVACY.md](PRIVACY.md) | Telemetry scope and retention controls |
 | [CONFIGURATION.md](CONFIGURATION.md) | YAML schema and overrides |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Quick fixes for common issues |
+| [docs/ROLE.md](docs/ROLE.md) | Guard enforcement responsibilities and non-goals |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution workflow and coding standards |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community expectations |
 | [SUPPORT.md](SUPPORT.md) | Escalation paths and SLAs |
