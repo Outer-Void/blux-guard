@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.blux.ai/phase0/guard_receipt.schema.json",
+  "title": "Guard Receipt",
+  "type": "object",
+  "required": [
+    "receipt_id",
+    "issued_at",
+    "decision",
+    "trace_id",
+    "capability_token_ref",
+    "token_status",
+    "constraints",
+    "reason_codes",
+    "signature"
+  ],
+  "properties": {
+    "receipt_id": {"type": "string"},
+    "issued_at": {"type": "number"},
+    "decision": {"type": "string", "enum": ["ALLOW", "WARN", "REQUIRE_CONFIRM", "BLOCK"]},
+    "trace_id": {"type": "string"},
+    "capability_token_ref": {"type": "string"},
+    "token_status": {"type": "string"},
+    "reason_codes": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "constraints": {
+      "type": "object",
+      "required": ["sandbox_profile", "network"],
+      "properties": {
+        "sandbox_profile": {"type": "string"},
+        "network": {"type": "object"},
+        "allowed_commands": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "allowed_paths": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "timeout_s": {"type": "number"},
+        "working_dir": {"type": "string"},
+        "environment": {"type": "object"},
+        "resource_limits": {"type": "object"},
+        "confirmation_required": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "discernment": {
+      "type": "object",
+      "properties": {
+        "risk_level": {"type": "string"},
+        "posture": {"type": "string"},
+        "summary": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "signature": {
+      "type": "object",
+      "required": ["alg", "value"],
+      "properties": {
+        "alg": {"type": "string"},
+        "value": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"decision": {"const": "ALLOW"}},
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "constraints": {
+            "anyOf": [
+              {"required": ["allowed_commands"]},
+              {"required": ["allowed_paths"]}
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

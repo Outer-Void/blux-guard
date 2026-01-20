@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.blux.ai/phase0/request_envelope.schema.json",
+  "title": "Request Envelope",
+  "type": "object",
+  "required": ["trace_id"],
+  "properties": {
+    "trace_id": {"type": "string"},
+    "capability_token_ref": {"type": "string"},
+    "capability_tokens": {"type": "array", "items": {"type": "string"}},
+    "command": {"type": "string"},
+    "allowed_commands": {"type": "array", "items": {"type": "string"}},
+    "allowed_paths": {"type": "array", "items": {"type": "string"}},
+    "sandbox_profile": {"type": "string"},
+    "network": {"type": "object"},
+    "timeout_s": {"type": "number"},
+    "working_dir": {"type": "string"},
+    "resource_limits": {"type": "object"},
+    "environment": {"type": "object"}
+  },
+  "additionalProperties": true
+}

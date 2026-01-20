@@ -14,8 +14,8 @@
    privileged execution.
 3. **Telemetry Assurance** — `core/telemetry.py` logs events without risking crashes; degrade warnings are
    emitted once when `BLUX_GUARD_TELEMETRY_WARN=once`.
-4. **Role Separation** — CLI commands map to User, Operator, and Root (cA) tiers; dangerous operations require
-   explicit confirmation via `--safe` flags.
+4. **Role Separation** — CLI commands map to User, Operator, and Elevated (cA) tiers; dangerous operations
+   require explicit confirmation via `--safe` flags.
 
 ## Disclosure & Updates
 
@@ -30,5 +30,5 @@ application continues and emits a single degrade warning when `BLUX_GUARD_TELEME
 ## Hardening Tips
 
 - Keep Python and system dependencies updated via Dependabot recommendations.
-- Run CI workflows (`.github/workflows/ci.yml` and `security.yml`) on every branch.
+- Run CI workflows (`.github/workflows/ci.yml`) on every branch.
 - Rotate any operator credentials stored outside the repository (e.g., Termux tokens) regularly.

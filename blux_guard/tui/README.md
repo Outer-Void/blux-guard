@@ -1,6 +1,6 @@
 # BLUX Guard Developer Security Cockpit
 
-The Textual cockpit now focuses on secure developer operations. It extends the legacy guard interface with new security instrumentation while remaining fully compatible with `initiate_cockpit.py`.
+The Textual cockpit now focuses on secure developer operations. It extends the guard interface with new security instrumentation for CLI-driven workflows.
 
 ## Panels
 
@@ -35,10 +35,4 @@ Shell launches and PTY commands record to the `devshell.jsonl` stream. When the 
 
 ```bash
 bluxq guard tui --mode dev
-```
-
-The legacy entry point remains available:
-
-```bash
-python initiate_cockpit.py
 ```

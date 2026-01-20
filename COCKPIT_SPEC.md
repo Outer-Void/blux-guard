@@ -4,7 +4,7 @@ BLUX Guard Developer Security Cockpit — Specification
 
 # Overview
 
-The Cockpit provides a unified operator view for BLUX Guard across CLI and TUI surfaces. It focuses on a single operator journey: launch the cockpit (`bluxq guard tui`), observe telemetry, run diagnostics, and export evidence. Secondary flows (legacy CLI, initiate_cockpit.py, blux_shell.py) remain supported via shims.
+The Cockpit provides a unified operator view for BLUX Guard across CLI and TUI surfaces. It focuses on a single operator journey: launch the cockpit (`bluxq guard tui`), observe telemetry, run diagnostics, and export evidence.
 
 # Navigation
 
@@ -37,5 +37,5 @@ When doctrine policies or registry keys are missing, Guard defaults to **observe
 
 # Compatibility
 
-- `blux_cli/blux.py`, `blux_guard/cli/bluxq.py`, `initiate_cockpit.py`, and `blux_shell.py` remain operational and route to the modern cockpit where applicable.
+- `blux_guard/cli/bluxq.py` remains the primary entry point for cockpit and guard operations.
 - Existing panels remain intact; new screens orchestrate them for the unified cockpit experience.

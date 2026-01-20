@@ -21,14 +21,15 @@ bluxq guard tui --mode dev
 ## Android / Termux
 
 1. Install dependencies: `pkg install python git clang make`.
-2. Clone the repository and run `scripts/install_termux.sh` to register the `bluxq` alias.
+2. Clone the repository and install the package with `pip install -e .`.
 3. Telemetry writes to `$HOME/.config/blux-guard/logs`; run `termux-setup-storage` if you see permission prompts.
 4. Start the cockpit with `bluxq guard tui --mode dev` inside Termux or termux-x11.
 
 ## Linux / WSL2
 
-1. Ensure Python 3.9+ is installed (`sudo apt install python3 python3-venv`).
-2. Execute `scripts/install_linux.sh` to create the shell alias and install requirements.
+1. Ensure Python 3.9+ is installed via your system package manager (for example, install
+   `python3` and `python3-venv` on Debian/Ubuntu).
+2. Install the package with `pip install -e .` (optionally inside a virtual environment).
 3. Launch the daemon (`bluxqd &`) and then run `bluxq guard tui --mode secure` for production monitoring.
 
 ## macOS
@@ -40,7 +41,7 @@ bluxq guard tui --mode dev
 ## Windows
 
 1. Use PowerShell 7+ and install Python 3.11 from the Microsoft Store or python.org.
-2. Run `scripts\install_windows.ps1` from an elevated PowerShell prompt to create the `bluxq` function.
+2. Install the package with `pip install -e .` and ensure your Python scripts directory is on `PATH`.
 3. Telemetry logs live in `%USERPROFILE%\.config\blux-guard\logs`.
 4. Start the daemon in one window (`bluxqd`) and launch the cockpit from another (`bluxq guard tui --mode dev`).
 

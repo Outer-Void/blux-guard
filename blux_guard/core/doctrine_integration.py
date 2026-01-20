@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 from typing import Any, Dict
 
 from . import telemetry
 
-_DOCTRINE_ROOT = pathlib.Path("/blux-doctrine")
+_DOCTRINE_DIR = pathlib.Path(os.environ.get("BLUX_GUARD_DOCTRINE_DIR", "/blux-doctrine"))
 _CACHE: Dict[str, Any] | None = None
 
 
@@ -17,8 +18,8 @@ def _load_doctrine() -> Dict[str, Any]:
     if _CACHE is not None:
         return _CACHE
     doctrine = {}
-    if _DOCTRINE_ROOT.exists():
-        for path in sorted(_DOCTRINE_ROOT.glob("**/*.json")):
+    if _DOCTRINE_DIR.exists():
+        for path in sorted(_DOCTRINE_DIR.glob("**/*.json")):
             try:
                 doctrine[path.stem] = json.loads(path.read_text(encoding="utf-8"))
             except json.JSONDecodeError:

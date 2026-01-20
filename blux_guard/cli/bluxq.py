@@ -10,11 +10,6 @@ from typing import Optional
 
 import typer
 
-try:
-    from blux_cli import blux as legacy_cli
-except Exception:  # pragma: no cover - defensive import guard
-    legacy_cli = None
-
 from blux_guard import audit, doctor
 from blux_guard.core import devsuite, receipt as receipt_engine, runtime, sandbox, telemetry
 from blux_guard.core import selfcheck as core_selfcheck
@@ -40,7 +35,7 @@ def main(
     debug: bool = typer.Option(False, "--debug", help="Enable verbose debugging output."),
     verbose: bool = typer.Option(False, "--verbose", help="Print verbose telemetry output."),
 ) -> None:
-    """Root CLI callback.
+    """Main CLI callback.
 
     The callback is intentionally empty so Typer can manage sub-commands.
     """
@@ -193,14 +188,27 @@ def guard_export() -> None:
 
 @guard_app.command("evaluate")
 def guard_evaluate(
-    envelope: pathlib.Path = typer.Argument(..., help="Envelope JSON payload."),
+    request_envelope: pathlib.Path = typer.Option(
+        ..., "--request-envelope", help="Envelope JSON payload."
+    ),
+    token: Optional[list[str]] = typer.Option(
+        None, "--token", help="Capability token (repeatable)."
+    ),
     discernment: Optional[pathlib.Path] = typer.Option(
         None, "--discernment", help="Optional discernment report JSON."
+    ),
+    revocations: Optional[pathlib.Path] = typer.Option(
+        None, "--revocations", help="Optional revocation list JSON."
     ),
 ) -> None:
     """Evaluate an envelope and emit a guard receipt."""
 
-    receipt = receipt_engine.evaluate_from_files(envelope, discernment)
+    receipt = receipt_engine.evaluate_from_files(
+        request_envelope,
+        discernment,
+        tokens=token or None,
+        revocations_path=revocations,
+    )
     typer.echo(json.dumps(receipt.to_dict(), indent=2, sort_keys=True))
 
 
@@ -221,24 +229,14 @@ def guard_verify_receipt(
 
 @guard_app.command("install")
 def guard_install(target: str = typer.Option("linux", help="linux|termux")) -> None:
-    """Hint the operator to platform installer scripts."""
+    """Hint the operator to platform installer documentation."""
 
-    script = f"scripts/install_{target}.sh"
-    typer.echo(f"Run: bash {script}")
+    typer.echo(f"See INSTALL.md for {target} instructions.")
     audit.record("cli.install", actor="cli", payload={"target": target})
 
 
-@app.command("legacy")
-def legacy_passthrough(args: Optional[list[str]] = typer.Argument(None)) -> None:
-    """Pass through to the legacy CLI for compatibility."""
-
-    if legacy_cli is None:
-        raise typer.Exit(code=1)
-    legacy_cli.app(args=args or [])
-
-
 @dev_app.command("init")
-def dev_init(path: pathlib.Path = typer.Argument(pathlib.Path.cwd(), help="Project root")) -> None:
+def dev_init(path: pathlib.Path = typer.Argument(pathlib.Path.cwd(), help="Project directory")) -> None:
     """Initialise a secure workspace."""
 
     _run_async("dev init", lambda: devsuite.initialise_workspace(path))
