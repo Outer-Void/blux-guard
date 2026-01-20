@@ -24,11 +24,6 @@ def audit_log_path() -> Path:
     return Path(status["audit_log"])
 
 
-def devshell_log_path() -> Path:
-    """Return the resolved devshell log path."""
-
-    status = telemetry.collect_status_sync()
-    return Path(status["devshell_log"])
 
 
 @dataclass
@@ -81,18 +76,3 @@ def record(
     )
     return cid
 
-
-def log_devshell_command(command: str, output_preview: str, *, correlation_id: Optional[str] = None) -> str:
-    """Convenience wrapper for devshell command logging."""
-
-    return record(
-        "devshell.exec",
-        actor="devshell",
-        stream="devshell",
-        payload={
-            "command": command,
-            "output": output_preview,
-            "correlation_id": correlation_id or generate_correlation_id(),
-        },
-        correlation_id=correlation_id,
-    )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from textual.widgets import Static
 
-from ..core import doctrine_integration, telemetry
+from ..core import telemetry
 
 
 class MetricsPanel(Static):
@@ -15,9 +15,7 @@ class MetricsPanel(Static):
 
     def refresh_metrics(self) -> None:
         status = telemetry.collect_status_sync()
-        score = doctrine_integration.doctrine_score() * 100
         message = (
-            f"Doctrine score: {score:.1f}%\n"
             f"Log dir: {status['log_dir']}\n"
             f"Audit log entries -> {status['audit_log']}\n"
             f"Telemetry enabled: {status['telemetry_enabled']}"

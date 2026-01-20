@@ -3,7 +3,7 @@
 BLUX Guard supports Android/Termux, Linux (including WSL2), macOS, and Windows. All instructions preserve
 existing cockpit entry points while enabling the new `bluxq` CLI.
 
-BLUX Guard is protocol enforcement + userland constraints, and no root required.
+BLUX Guard is protocol enforcement + userland constraints.
 
 ## Common Steps
 
@@ -38,7 +38,7 @@ bluxq guard tui --mode dev
 
 1. Install Homebrew Python 3.11+ or use the system Python if it meets the minimum version.
 2. Run `pip install -e .` from inside a virtual environment (recommended via `python -m venv .venv`).
-3. The cockpit shell panel defaults to `/bin/zsh`; adjust via configuration overrides in `config/local.yaml`.
+3. Adjust configuration overrides in `config/local.yaml` as needed.
 
 ## Windows
 

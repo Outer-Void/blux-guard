@@ -1,6 +1,3 @@
-sandbox:
-  shell: /bin/bash
-  network: restricted
 telemetry:
   enabled: true
   warn_once: true

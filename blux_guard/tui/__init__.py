@@ -7,7 +7,6 @@ from .credentials_panel import CredentialsPanel
 from .dashboard import DashboardApp, run_dashboard
 from .metrics_panel import MetricsPanel
 from .process_panel import ProcessPanel
-from .shell_panel import ShellPanel
 from .yara_panel import YaraPanel
 
 __all__ = [
@@ -18,8 +17,6 @@ __all__ = [
     "DashboardApp",
     "MetricsPanel",
     "ProcessPanel",
-    "ShellPanel",
     "YaraPanel",
     "run_dashboard",
 ]
-

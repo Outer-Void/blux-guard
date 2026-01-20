@@ -1,7 +1,7 @@
 # BLUX Guard
 
 > **Developer Security Cockpit for the BLUX Ecosystem**  
-> Real-time defense, telemetry, and doctrine-aware sandboxing integrated with AI orchestration.
+> Real-time defense, telemetry, and deterministic receipt issuance integrated with AI orchestration.
 
 [![License](https://img.shields.io/badge/License-Dual-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
@@ -13,7 +13,7 @@
 
 BLUX Guard is a discreet, layered security defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices**. It operates transparently, remains fully auditable, and stays under operator control at all times.
 
-BLUX Guard provides protocol enforcement + userland constraints, and **no root required** for setup or operation.
+BLUX Guard provides protocol enforcement + userland constraints.
 Enforcement stays safely in userland by applying receipt-defined constraints to Guard actions
 and relying on non-privileged checks (filesystem scoping, process boundaries, and explicit
 operator confirmations) instead of any elevated system controls.
@@ -84,7 +84,7 @@ pip install -e .
 bluxq guard status
 
 # Evaluate a request envelope and emit a receipt
-blux-guard evaluate --request-envelope examples/envelope.json --token TOKEN_VALUE
+blux-guard evaluate --request-envelope examples/envelope.json --capability-ref CAP_REF
 ```
 
 ### Power Mode 2.0 (Recommended)
@@ -104,7 +104,6 @@ bluxq guard tui --mode dev
 
 ```bash
 bluxq dev init        # Initialize development environment
-bluxq dev shell       # Open developer shell
 bluxq dev scan .      # Scan current directory
 bluxq dev deploy --safe  # Deploy with safety checks
 ```
@@ -147,7 +146,6 @@ BLUX Guard uses deterministic, time-bounded, and auditable trip conditions:
 BLUX Guard writes best-effort logs to:
 
 - `~/.config/blux-guard/logs/audit.jsonl`
-- `~/.config/blux-guard/logs/devshell.jsonl` (developer shell stream)
 - `~/.config/blux-guard/logs/telemetry.db` (SQLite, optional)
 
 If the directory is unwritable or SQLite is unavailable, logging **degrades silently** and the app **continues running**.
@@ -169,8 +167,8 @@ export BLUX_GUARD_TELEMETRY_WARN=once
 | Platform | Status | Notes |
 |----------|--------|-------|
 | **Android / Termux** | ✅ Full Support | Installers configure aliases; telemetry lives under `$HOME/.config/blux-guard/logs` |
-| **Linux** | ✅ Full Support | Sandbox shell defaults to `/bin/bash`, Prometheus metrics export via `bluxqd` |
-| **macOS** | ✅ Full Support | Shell panel launches `/bin/zsh` while retaining doctrine validation |
+| **Linux** | ✅ Full Support | Prometheus metrics export via `bluxqd` |
+| **macOS** | ✅ Full Support | Prometheus metrics export via `bluxqd` |
 | **Windows** | ✅ Full Support | PowerShell support via `COMSPEC`; telemetry paths expand to `%USERPROFILE%\.config\blux-guard\logs` |
 | **WSL2** | ✅ Full Support | Works like native Linux installation |
 
@@ -214,7 +212,7 @@ termux-setup-storage
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Module graph and platform matrix |
 | [INSTALL.md](INSTALL.md) | Platform-specific installation steps |
 | [OPERATIONS.md](OPERATIONS.md) | Runbook for day-two operations |
-| [SECURITY.md](SECURITY.md) | Threat model, doctrine enforcement, telemetry guarantees |
+| [SECURITY.md](SECURITY.md) | Threat model, telemetry guarantees |
 | [PRIVACY.md](PRIVACY.md) | Telemetry scope and retention controls |
 | [CONFIGURATION.md](CONFIGURATION.md) | YAML schema and overrides |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Quick fixes for common issues |
@@ -239,16 +237,14 @@ termux-setup-storage
 
 ---
 
-## 🔒 Security Model & Doctrine Alignment
+## 🔒 Security Model
 
-- **User / Operator / Elevated (cA)** tiers remain enforced
-- Developer flows inherit doctrine checks before privileged actions
-- All automation routes through sandboxed PTY shell to respect containment boundaries
-- Doctrine integrations surface alignment scores directly inside the cockpit and via CLI
+- Enforcement stays deterministic and receipt-scoped
+- All automation routes through receipt constraints to respect containment boundaries
 
 ## 🧾 Receipt Enforcement (No Elevation)
 
-BLUX Guard issues signed receipts that describe allowed commands or paths, plus explicit sandbox
+BLUX Guard issues receipts that describe allowed commands or paths, plus explicit sandbox
 and network constraints. Enforcement is intentionally non-privileged: receipts describe what an
 agent may do, and downstream runners can enforce those rules without requiring any elevation.
 If you need broader access, adjust the request envelope constraints instead of escalating.

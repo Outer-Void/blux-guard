@@ -19,7 +19,6 @@ _LOG_DIR = Path(
     os.environ.get("BLUX_GUARD_LOG_DIR", Path.home() / ".config" / "blux-guard" / "logs")
 )
 _JSONL = _LOG_DIR / "audit.jsonl"
-_DEVJSONL = _LOG_DIR / "devshell.jsonl"
 _DB = _LOG_DIR / "telemetry.db"
 
 _warned_once: Dict[str, bool] = {"json": False, "sqlite": False, "dir": False}
@@ -149,6 +148,7 @@ def record_event(
     if not _telemetry_enabled():
         return
 
+    stream = "audit"
     payload = payload or {}
     ensure_log_dir()
 
@@ -162,8 +162,7 @@ def record_event(
         "channel": action,
     }
 
-    path = _JSONL if stream == "audit" else _DEVJSONL
-    _safe_jsonl_write(path, obj)
+    _safe_jsonl_write(_JSONL, obj)
     _safe_sqlite_write("events", obj)
 
     if _DEBUG or _VERBOSE:
@@ -178,7 +177,6 @@ async def collect_status() -> Dict[str, Any]:
     return {
         "log_dir": str(_LOG_DIR),
         "audit_log": str(_JSONL),
-        "devshell_log": str(_DEVJSONL),
         "sqlite_db": str(_DB),
         "telemetry_enabled": _telemetry_enabled(),
         "debug": _DEBUG,

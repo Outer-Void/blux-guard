@@ -1,0 +1,15 @@
+{
+  "default_decision": "ALLOW",
+  "order": ["band", "uncertainty"],
+  "band": {
+    "critical": "BLOCK",
+    "high": "REQUIRE_CONFIRM",
+    "medium": "WARN",
+    "low": "ALLOW"
+  },
+  "uncertainty": {
+    "high": "REQUIRE_CONFIRM",
+    "medium": "WARN",
+    "low": "ALLOW"
+  }
+}

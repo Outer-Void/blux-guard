@@ -4,7 +4,7 @@ set -euo pipefail
 repo_dir=$(git rev-parse --show-toplevel)
 cd "$repo_dir"
 
-python scripts/physics_no_root.py
+python scripts/physics_guard.py
 
 schema_names=(
   "request_envelope.schema.json"

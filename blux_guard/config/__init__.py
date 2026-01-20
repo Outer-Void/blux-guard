@@ -29,6 +29,5 @@ def default_paths() -> Dict[str, str]:
         "config_dir": str(config_dir()),
         "log_dir": str(log_dir()),
         "audit_log": str(log_dir() / "audit.jsonl"),
-        "devshell_log": str(log_dir() / "devshell.jsonl"),
         "sqlite_db": str(log_dir() / "telemetry.db"),
     }

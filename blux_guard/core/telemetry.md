@@ -5,7 +5,6 @@ The telemetry module records guard activity to JSONL and SQLite sinks without in
 ## File Locations
 
 - `~/.config/blux-guard/logs/audit.jsonl` – general guard activity
-- `~/.config/blux-guard/logs/devshell.jsonl` – sandbox and PTY operations
 - `~/.config/blux-guard/logs/telemetry.db` – optional SQLite mirror (`events` table)
 
 Override the base directory with `BLUX_GUARD_LOG_DIR`.
@@ -26,4 +25,4 @@ All writes are best-effort:
 
 ## Privacy
 
-Only local actions are recorded. Actors are tagged (`cli`, `daemon`, `sandbox`, etc.) for traceability without transmitting data off-device.
+Only local actions are recorded. Actors are tagged (`cli`, `daemon`, etc.) for traceability without transmitting data off-device.

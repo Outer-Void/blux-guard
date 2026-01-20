@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import pathlib
-from typing import Iterable
 
-from . import doctrine_integration, sandbox, telemetry
+from . import telemetry
 
 
 async def initialise_workspace(path: pathlib.Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
     telemetry.record_event("dev.init", actor="devsuite", payload={"path": str(path)})
-    doctrine_integration.ensure_doctrine_loaded()
 
 
 async def run_build() -> None:
@@ -46,17 +44,3 @@ async def run_deploy(safe: bool = True) -> None:
     )
     await asyncio.sleep(0)
 
-
-async def run_doctrine_check(check: bool = True) -> None:
-    telemetry.record_event(
-        "dev.doctrine",
-        actor="devsuite",
-        payload={"check": check},
-    )
-    if check:
-        doctrine_integration.ensure_doctrine_loaded()
-        await asyncio.sleep(0)
-
-
-async def run_guarded_command(command: Iterable[str] | str) -> int:
-    return await sandbox.run_command(command)

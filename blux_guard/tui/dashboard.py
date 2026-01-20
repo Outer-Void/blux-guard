@@ -12,30 +12,14 @@ from textual.binding import Binding
 from textual.containers import Grid, Vertical
 from textual.widgets import Footer, Header, Static
 
-from ..core import doctrine_integration, security_cockpit, telemetry
+from ..core import security_cockpit, telemetry
 from .audit_integrity_panel import AuditIntegrityPanel
 from .audit_panel import AuditPanel
 from .bq_panel import BqGuardPanel
 from .credentials_panel import CredentialsPanel
 from .metrics_panel import MetricsPanel
 from .process_panel import ProcessPanel
-from .shell_panel import ShellPanel
 from .yara_panel import YaraPanel
-
-
-class DoctrinePanel(Static):
-    """Display doctrine alignment information."""
-
-    DEFAULT_CSS = """DoctrinePanel { padding: 1; }"""
-
-    def on_mount(self) -> None:  # type: ignore[override]
-        self.update_doctrine()
-
-    def update_doctrine(self) -> None:
-        score = doctrine_integration.doctrine_score() * 100
-        doctrine = doctrine_integration.ensure_doctrine_loaded()
-        summary = f"Doctrine score: {score:.1f}%\nPolicies loaded: {len(doctrine)}"
-        self.update(summary)
 
 
 class DashboardApp(App[Any]):
@@ -62,17 +46,14 @@ class DashboardApp(App[Any]):
             with Grid(id="grid"):
                 yield MetricsPanel(classes="panel")
                 yield ProcessPanel(classes="panel")
-                yield DoctrinePanel(classes="panel")
                 yield AuditPanel(classes="panel")
                 yield YaraPanel(classes="panel")
                 yield CredentialsPanel(classes="panel")
                 yield AuditIntegrityPanel(classes="panel")
                 yield BqGuardPanel(classes="panel")
-            yield ShellPanel(classes="panel")
         yield Footer()
 
     def action_refresh(self) -> None:
-        self.query_one(DoctrinePanel).update_doctrine()
         self.query_one(MetricsPanel).refresh_metrics()
         self.query_one(AuditPanel).refresh_audit()
         self.query_one(ProcessPanel).refresh_processes()

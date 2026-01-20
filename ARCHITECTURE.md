@@ -8,9 +8,8 @@ runtime:
 
 1. **Interface Layer** — `blux_guard/cli/bluxq.py` Quantum CLI and Textual TUI components under
    `blux_guard/tui/`.
-2. **Execution Layer** — sandbox orchestration from `blux_guard/core/sandbox.py`, development flows in
-   `blux_guard/core/devsuite.py`, and doctrine alignment checks provided by
-   `blux_guard/core/doctrine_integration.py`.
+2. **Execution Layer** — receipt issuance from `blux_guard/core/receipt.py` and development flows in
+   `blux_guard/core/devsuite.py`.
 3. **Telemetry Layer** — `blux_guard/core/telemetry.py` streams JSONL and SQLite mirrors while the API
    exposes Prometheus metrics.
 4. **Platform Agents** — `blux_guard/agents/` collects host data per OS and reports to the daemon.
@@ -20,26 +19,25 @@ runtime:
 ## Control Flow
 
 ```
-bluxq → runtime.ensure_supported_python → sandbox.enforce → doctrine.check → telemetry.record_event
+bluxq → runtime.ensure_supported_python → receipt.issue_guard_receipt → telemetry.record_event
 ```
 
 1. Commands enter through the CLI or cockpit.
-2. `engine.enforce` decorators validate doctrine and privilege boundaries before the action runs.
-3. `sandbox` encapsulates PTY shells or subprocesses with resource limits.
-4. Results, audits, and metrics emit through `telemetry.record_event` which never raises on I/O errors.
-5. The daemon and TUI subscribe to telemetry streams and update panels in real time.
+2. Receipt issuance is deterministic and protocol-scoped.
+3. Results, audits, and metrics emit through `telemetry.record_event` which never raises on I/O errors.
+4. The daemon and TUI subscribe to telemetry streams and update panels in real time.
 
 ## Module Relationships
 
 - `blux_guard/core/__init__.py` exposes the developer runtime modules.
-- Legacy sensors and trip engines are handled through the guard receipt engine and doctrine workflows.
+- Legacy sensors and trip engines are handled through the guard receipt engine.
 - Agents call back into `telemetry` so all platforms share a unified audit surface.
 
 ## Platform Matrix
 
 | Component            | Android / Termux | Linux / WSL2 | macOS | Windows |
 |----------------------|------------------|--------------|-------|---------|
-| CLI (`bluxq`)        | ✅ Termux shell  | ✅ Bash/Zsh  | ✅ Zsh | ✅ PowerShell |
+| CLI (`bluxq`)        | ✅ Termux        | ✅ Native    | ✅    | ✅ PowerShell |
 | TUI (`dashboard`)    | ✅ (termux-x11)  | ✅ Native    | ✅    | ✅ Windows Terminal |
 | Daemon (`bluxqd`)    | ✅ uvicorn       | ✅ uvicorn   | ✅    | ✅ (uvicorn + asyncio) |
 | Agents               | Termux agent     | Linux agent  | mac agent | Windows agent |
@@ -49,4 +47,4 @@ bluxq → runtime.ensure_supported_python → sandbox.enforce → doctrine.check
 
 - Commander web cockpit mirrors via `/api/stream`.
 - SBOM generation and SLSA compliance in CI.
-- Extended sandbox policies for containerized builds.
+- Extended receipt policies for containerized builds.

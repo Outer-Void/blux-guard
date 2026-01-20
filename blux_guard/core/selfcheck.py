@@ -7,7 +7,7 @@ import sqlite3
 from pathlib import Path
 from typing import Dict, List
 
-from . import sandbox, telemetry
+from . import telemetry
 
 
 def _check_config_files() -> Dict[str, str]:
@@ -64,20 +64,6 @@ def _check_sqlite() -> Dict[str, str]:
         return {"name": "sqlite.telemetry", "status": "warn", "detail": str(exc)}
 
 
-async def _check_sandbox() -> Dict[str, str]:
-    try:
-        supported = await sandbox.probe_shell()
-        if supported:
-            return {"name": "sandbox.shell", "status": "ok", "detail": supported}
-        return {
-            "name": "sandbox.shell",
-            "status": "warn",
-            "detail": "shell probe returned falsy result",
-        }
-    except Exception as exc:  # pragma: no cover - defensive
-        return {"name": "sandbox.shell", "status": "fail", "detail": str(exc)}
-
-
 async def _check_api() -> Dict[str, str]:
     loop = asyncio.get_running_loop()
     try:
@@ -112,7 +98,6 @@ async def run_self_check() -> Dict[str, object]:
     results.append(_check_config_files())
     results.append(_check_log_writable())
     results.append(_check_sqlite())
-    results.append(await _check_sandbox())
     results.append(await _check_api())
 
     overall = _aggregate_status(results)

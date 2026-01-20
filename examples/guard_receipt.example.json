@@ -4,13 +4,18 @@
   "issued_at": 1735756800.0,
   "decision": "ALLOW",
   "trace_id": "trace-12345",
-  "capability_token_ref": "token-ref-123",
-  "token_status": "valid",
-  "reason_codes": ["risk.low"],
+  "capability_token_ref": "cap-ref-123",
+  "token_status": "unverified",
+  "reason_codes": ["discernment.none", "decision.allow"],
   "constraints": {
     "sandbox_profile": "userland",
     "network": {"egress": "restricted"},
     "allowed_paths": ["/workspace/blux-guard"],
+    "allowlists": {
+      "commands": [],
+      "paths": ["/workspace/blux-guard"],
+      "environment": ["PATH", "LANG", "LC_ALL", "LC_CTYPE", "HOME"]
+    },
     "timeout_s": 300,
     "working_dir": "/workspace/blux-guard",
     "environment": {
@@ -21,9 +26,14 @@
     "confirmation_required": false
   },
   "discernment": {
-    "risk_level": "low",
-    "posture": "normal",
+    "band": "low",
+    "uncertainty": "low",
     "summary": "userland enforcement"
   },
-  "signature": {"alg": "HMAC-SHA256", "value": "placeholder"}
+  "signature": {"alg": "none", "value": "unsigned"},
+  "bindings": {
+    "trace_id": "trace-12345",
+    "envelope_hash": "envhash-123",
+    "capability_refs": ["cap-ref-123"]
+  }
 }

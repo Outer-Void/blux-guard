@@ -3,19 +3,16 @@
 ## Threat Model
 
 - **Adversaries**: Malware attempting to tamper with guard modules, unauthorized operators, and remote
-  attackers seeking shell access.
-- **Assets**: Device integrity, doctrine alignment, audit trails, and developer workflows.
+  attackers seeking unauthorized access.
+- **Assets**: Device integrity, receipt integrity, audit trails, and developer workflows.
 
 ## Key Controls
 
-1. **Sandboxed Execution** — `core/sandbox.py` ensures commands run inside PTY-managed environments with
-   optional network restrictions.
-2. **Doctrine Enforcement** — `core/engine.py` decorators validate requests against doctrine rules before
-   privileged execution.
-3. **Telemetry Assurance** — `core/telemetry.py` logs events without risking crashes; degrade warnings are
+1. **Receipt Issuance** — `core/receipt.py` emits deterministic receipts with explicit constraints.
+2. **Telemetry Assurance** — `core/telemetry.py` logs events without risking crashes; degrade warnings are
    emitted once when `BLUX_GUARD_TELEMETRY_WARN=once`.
-4. **Role Separation** — CLI commands map to User, Operator, and Elevated (cA) tiers; dangerous operations
-   require explicit confirmation via `--safe` flags.
+3. **Role Separation** — CLI commands map to user roles; dangerous operations require explicit
+   confirmation via `--safe` flags.
 
 ## Disclosure & Updates
 
