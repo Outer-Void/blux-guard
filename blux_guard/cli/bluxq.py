@@ -16,7 +16,7 @@ except Exception:  # pragma: no cover - defensive import guard
     legacy_cli = None
 
 from blux_guard import audit, doctor
-from blux_guard.core import devsuite, runtime, sandbox, telemetry
+from blux_guard.core import devsuite, receipt as receipt_engine, runtime, sandbox, telemetry
 from blux_guard.core import selfcheck as core_selfcheck
 from blux_guard.integrations import doctrine as doctrine_integration
 from blux_guard.tui import app as cockpit_app
@@ -189,6 +189,34 @@ def guard_export() -> None:
     status = telemetry.collect_status_sync()
     audit.record("cli.export", actor="cli", payload=status)
     typer.echo(json.dumps(status, indent=2))
+
+
+@guard_app.command("evaluate")
+def guard_evaluate(
+    envelope: pathlib.Path = typer.Argument(..., help="Envelope JSON payload."),
+    discernment: Optional[pathlib.Path] = typer.Option(
+        None, "--discernment", help="Optional discernment report JSON."
+    ),
+) -> None:
+    """Evaluate an envelope and emit a guard receipt."""
+
+    receipt = receipt_engine.evaluate_from_files(envelope, discernment)
+    typer.echo(json.dumps(receipt.to_dict(), indent=2, sort_keys=True))
+
+
+@guard_app.command("verify-receipt")
+def guard_verify_receipt(
+    receipt_path: pathlib.Path = typer.Argument(..., help="Guard receipt JSON payload.")
+) -> None:
+    """Verify a guard receipt for integrity."""
+
+    receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    ok, reason = receipt_engine.verify_receipt(receipt_payload)
+    payload = {"ok": ok, "reason": reason}
+    if not ok:
+        typer.echo(json.dumps(payload), err=True)
+        raise typer.Exit(code=2)
+    typer.echo(json.dumps(payload))
 
 
 @guard_app.command("install")
