@@ -20,6 +20,7 @@ from blux_guard.contracts import phase0 as phase0_contracts
 
 _DEFAULT_SECRET = "blux-guard-dev-secret"
 _SIGNATURE_ALG = "HMAC-SHA256"
+GUARD_RECEIPT_SCHEMA_ID = "blux://contracts/guard_receipt.schema.json"
 
 
 def _receipt_secret() -> str:
@@ -92,6 +93,7 @@ class GuardReceipt:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
+            "$schema": GUARD_RECEIPT_SCHEMA_ID,
             "receipt_id": self.receipt_id,
             "issued_at": self.issued_at,
             "decision": self.decision,
@@ -197,6 +199,7 @@ def evaluate_receipt(
     constraints = {key: value for key, value in constraints.items() if value is not None}
 
     receipt_payload = {
+        "$schema": GUARD_RECEIPT_SCHEMA_ID,
         "receipt_id": str(uuid.uuid4()),
         "issued_at": time.time(),
         "decision": decision,

@@ -13,6 +13,8 @@
 
 BLUX Guard is a discreet, layered security defender that uses deterministic trip-variables, tamper-resistant sensors, and safe containment to protect **your own devices**. It operates transparently, remains fully auditable, and stays under operator control at all times.
 
+BLUX Guard provides protocol enforcement + userland constraints, and **no root required** for setup or operation.
+
 **Core Principles:**
 - 🔒 Defensive-only security with no offensive payloads
 - 🔍 Transparent operation with complete auditability

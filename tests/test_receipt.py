@@ -72,10 +72,12 @@ def test_valid_token_allows(monkeypatch: pytest.MonkeyPatch) -> None:
             envelope,
             capability_tokens=["token-1"],
         )
+        payload = receipt.to_dict()
         assert receipt.decision == "ALLOW"
         assert "sandbox_profile" in receipt.constraints
         assert "network" in receipt.constraints
         assert receipt.constraints.get("allowed_commands") or receipt.constraints.get("allowed_paths")
+        assert payload["$schema"] == receipt_engine.GUARD_RECEIPT_SCHEMA_ID
 
 
 def test_receipt_tamper_fails(monkeypatch: pytest.MonkeyPatch) -> None:
