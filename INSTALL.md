@@ -3,6 +3,8 @@
 BLUX Guard supports Android/Termux, Linux (including WSL2), macOS, and Windows. All instructions preserve
 existing cockpit entry points while enabling the new `bluxq` CLI.
 
+BLUX Guard is protocol enforcement + userland constraints, and no root required.
+
 ## Common Steps
 
 ```bash

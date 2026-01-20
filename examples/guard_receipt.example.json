@@ -1,0 +1,29 @@
+{
+  "$schema": "blux://contracts/guard_receipt.schema.json",
+  "receipt_id": "b0f27926-808f-4a18-821c-0af9e4e7783c",
+  "issued_at": 1735756800.0,
+  "decision": "ALLOW",
+  "trace_id": "trace-12345",
+  "capability_token_ref": "token-ref-123",
+  "token_status": "valid",
+  "reason_codes": ["risk.low"],
+  "constraints": {
+    "sandbox_profile": "userland",
+    "network": {"egress": "restricted"},
+    "allowed_paths": ["/workspace/blux-guard"],
+    "timeout_s": 300,
+    "working_dir": "/workspace/blux-guard",
+    "environment": {
+      "allowlist": ["PATH", "LANG", "LC_ALL", "LC_CTYPE", "HOME"],
+      "denylist": ["AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "GITHUB_TOKEN"]
+    },
+    "resource_limits": {"cpu_seconds": 120, "memory_mb": 512, "processes": 64},
+    "confirmation_required": false
+  },
+  "discernment": {
+    "risk_level": "low",
+    "posture": "normal",
+    "summary": "userland enforcement"
+  },
+  "signature": {"alg": "HMAC-SHA256", "value": "placeholder"}
+}

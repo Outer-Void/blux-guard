@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.blux.ai/phase0/guard_receipt.schema.json",
+  "$id": "blux://contracts/guard_receipt.schema.json",
   "title": "Guard Receipt",
   "type": "object",
   "required": [
