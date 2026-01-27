@@ -2,11 +2,7 @@
   "$schema": "blux://contracts/guard_receipt.schema.json",
   "receipt_id": "b0f27926-808f-4a18-821c-0af9e4e7783c",
   "issued_at": 1735756800.0,
-  "decision": "ALLOW",
   "trace_id": "trace-12345",
-  "capability_token_ref": "cap-ref-123",
-  "token_status": "unverified",
-  "reason_codes": ["discernment.none", "decision.allow"],
   "constraints": {
     "sandbox_profile": "userland",
     "network": {"egress": "restricted"},
@@ -22,15 +18,8 @@
       "allowlist": ["PATH", "LANG", "LC_ALL", "LC_CTYPE", "HOME"],
       "denylist": ["AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "GITHUB_TOKEN"]
     },
-    "resource_limits": {"cpu_seconds": 120, "memory_mb": 512, "processes": 64},
-    "confirmation_required": false
+    "resource_limits": {"cpu_seconds": 120, "memory_mb": 512, "processes": 64}
   },
-  "discernment": {
-    "band": "low",
-    "uncertainty": "low",
-    "summary": "userland enforcement"
-  },
-  "signature": {"alg": "none", "value": "unsigned"},
   "bindings": {
     "trace_id": "trace-12345",
     "envelope_hash": "envhash-123",

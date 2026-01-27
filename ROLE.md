@@ -7,4 +7,4 @@ BLUX Guard provides enforcement-only receipt issuance with deterministic, userla
 - Does not sandbox-run commands or spawn shells.
 - Does not issue or verify tokens.
 - Does not interpret doctrine, policy, or ethics.
-- Can be bypassed by design, but emits audit logs when a bypass signal is provided.
+- Does not provide control-plane services or orchestration.

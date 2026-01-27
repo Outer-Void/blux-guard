@@ -1,11 +1,9 @@
-"""Core runtime utilities for the BLUX Guard Developer Suite."""
+"""Core runtime utilities for the BLUX Guard mechanics."""
 
-from . import devsuite, runtime, security_cockpit, selfcheck, telemetry
+from . import receipt, runtime, telemetry
 
 __all__ = [
-    "devsuite",
+    "receipt",
     "runtime",
-    "security_cockpit",
-    "selfcheck",
     "telemetry",
 ]

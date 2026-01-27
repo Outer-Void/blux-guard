@@ -23,7 +23,7 @@ def log_dir() -> Path:
 
 
 def default_paths() -> Dict[str, str]:
-    """Expose standard paths for docs and CLIs."""
+    """Expose standard guard paths for logs and config."""
 
     return {
         "config_dir": str(config_dir()),

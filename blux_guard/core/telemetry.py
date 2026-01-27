@@ -171,7 +171,7 @@ def record_event(
 
 
 async def collect_status() -> Dict[str, Any]:
-    """Return a simplified status snapshot for CLI consumption."""
+    """Return a simplified status snapshot for guard reporting."""
 
     ensure_log_dir()
     return {

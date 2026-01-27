@@ -14,14 +14,13 @@ BLUX Guard stores telemetry locally on the operator's device. No automatic uploa
 
 ## Controls
 
-- Disable telemetry: set `BLUX_GUARD_TELEMETRY=off` before launching `bluxq` or `bluxqd`.
+- Disable telemetry: set `BLUX_GUARD_TELEMETRY=off` before running guard processes.
 - Limit warnings: `BLUX_GUARD_TELEMETRY_WARN=once` prints a single degrade message when storage fails.
 - Custom location: `BLUX_GUARD_LOG_DIR=/custom/path` redirects all files.
 
 ## Retention & Rotation
 
-Operators manage retention manually. Use the guidance in `OPERATIONS.md` to rotate logs or purge data as
-required by policy.
+Operators manage retention manually by rotating or purging logs as needed.
 
 ## Access
 

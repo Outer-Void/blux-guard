@@ -25,4 +25,4 @@ All writes are best-effort:
 
 ## Privacy
 
-Only local actions are recorded. Actors are tagged (`cli`, `daemon`, etc.) for traceability without transmitting data off-device.
+Only local actions are recorded. Actors are tagged for traceability without transmitting data off-device.

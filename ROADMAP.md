@@ -2,18 +2,16 @@
 
 ## Near Term
 
-- **Commander Mirror** — Expose the cockpit over the web by consuming `/api/stream` events.
+- **Schema Consolidation** — Maintain Phase 0 contract schemas under repo-root `contracts/`.
 - **SBOM Generation** — Automate CycloneDX export for dependency transparency.
-- **Enhanced Sandbox** — Add cgroup and job object limits for deeper containment.
+- **Constraint Profiles** — Expand deterministic constraint presets for receipts.
 
 ## Mid Term
 
 - **SLSA Compliance** — Integrate provenance attestations into CI builds.
-- **AI Advisor Enhancements** — Expand BLUX-Lite guidance with contextual doctrine tips.
-- **Policy Templates** — Provide curated doctrine packs for common industry frameworks.
+- **Receipt Traceability** — Improve trace/binding metadata for mechanical auditing.
 
 ## Long Term
 
-- **Fleet Management** — Manage multiple devices from a centralized Commander hub.
-- **Pluggable Sensors** — Allow third-party sensor modules with signed manifests.
-- **Automated Recovery** — Integrate snapshot/rollback pipelines for full system restore.
+- **Constraint Library** — Publish reusable receipt constraint templates.
+- **Schema Validation Tooling** — Provide offline schema validation helpers.

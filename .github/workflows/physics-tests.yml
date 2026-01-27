@@ -1,0 +1,181 @@
+---
+name: physics-tests
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 9 * * 1"  # weekly Monday 09:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: physics-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Phase 0 physics tests (guard-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "PHYSICS: start"
+
+          # ---- Allowlist rules (path-based) ----
+          # If a match occurs inside any allowlisted path, it is ignored.
+          # Keep this list small and explicit.
+          ALLOWLIST_PATHS=(
+            ".github/workflows/"
+          )
+
+          is_allowlisted() {
+            local p="$1"
+            for a in "${ALLOWLIST_PATHS[@]}"; do
+              if [[ "$p" == "$a"* ]]; then
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          should_scan_file() {
+            local p="$1"
+            local base
+            base="$(basename "$p")"
+
+            case "$p" in
+              docs/*) return 1 ;;
+            esac
+
+            case "$p" in
+              *.md|*.txt) return 1 ;;
+            esac
+
+            case "$base" in
+              ROADMAP.md|CHANGELOG.md|COMPLIANCE.md|DEVELOPER_GUIDE.md|SECURITY_OVERVIEW.md)
+                return 1
+                ;;
+            esac
+
+            case "$p" in
+              *.py|*.sh|*.js|*.ts|*.json|*.yml|*.yaml|*.toml|*.ini|*.cfg) return 0 ;;
+            esac
+
+            return 1
+          }
+
+          # ---- 1) Forbid execution primitives ----
+          EXEC_PATTERNS=(
+            "subprocess"
+            "os.system"
+            "exec("
+            "eval("
+            "shell=True"
+            "bash -c"
+            "pwsh -Command"
+            "| sh"
+            "|bash"
+            "child_process"
+            "ProcessBuilder"
+            "Runtime.getRuntime"
+          )
+
+          # ---- 2) Forbid token handling ----
+          TOKEN_PATTERNS=(
+            "issue_token"
+            "verify_token"
+            "sign_token"
+            "revoke_token"
+            "mint_token"
+            "token_status"
+            "capability_token"
+            "capability_tokens"
+          )
+
+          # ---- 3) Forbid policy/ethics/decision logic ----
+          POLICY_PATTERNS=(
+            "policy engine"
+            "ethics"
+            "decision layer"
+            "decision logic"
+          )
+
+          # ---- 4) Forbid control-plane surfaces ----
+          CONTROL_PLANE_PATTERNS=(
+            "FastAPI"
+            "uvicorn"
+            "gunicorn"
+            "starlette"
+            "typer"
+            "click"
+            "argparse"
+            "textual"
+            "websocket"
+            "daemon"
+            "server"
+          )
+
+          echo "PHYSICS: scanning banned patterns"
+          found=0
+          while IFS= read -r file; do
+            if ! should_scan_file "$file"; then
+              continue
+            fi
+            for pat in "${EXEC_PATTERNS[@]}" "${TOKEN_PATTERNS[@]}" "${POLICY_PATTERNS[@]}" "${CONTROL_PLANE_PATTERNS[@]}"; do
+              matches="$(grep -Fni -- "$pat" "$file" || true)"
+              if [[ -n "$matches" ]]; then
+                if ! is_allowlisted "$file"; then
+                  echo "PHYSICS FAIL: banned pattern '$pat' in $file"
+                  echo "$matches"
+                  found=1
+                fi
+              fi
+            done
+          done < <(git ls-files)
+
+          # ---- 5) Forbid legacy workflow files (must be deleted, not disabled) ----
+          echo "PHYSICS: ensuring only canonical workflows exist"
+          allowed_wf=("physics-tests.yml" "schema-validate.yml" "lint-docs.yml")
+          if [[ -d ".github/workflows" ]]; then
+            for wf in .github/workflows/*.yml .github/workflows/*.yaml; do
+              [[ -e "$wf" ]] || continue
+              base="$(basename "$wf")"
+              ok=0
+              for a in "${allowed_wf[@]}"; do
+                if [[ "$base" == "$a" ]]; then ok=1; fi
+              done
+              if [[ "$ok" -ne 1 ]]; then
+                echo "PHYSICS FAIL: non-canonical workflow present: $wf"
+                found=1
+              fi
+            done
+          fi
+
+          # ---- 6) Forbid local schema copies outside contracts ----
+          echo "PHYSICS: checking schema placement"
+          schema_like_re='schema\.json|\.schema\.json|contracts/.*\.json$'
+          while IFS= read -r f; do
+            if echo "$f" | grep -E -i -q "$schema_like_re"; then
+              if [[ "$f" != contracts/* ]]; then
+                echo "PHYSICS FAIL: schema-like file outside contracts/: $f"
+                found=1
+              fi
+            fi
+          done < <(git ls-files)
+
+          if [[ "$found" -ne 0 ]]; then
+            echo "PHYSICS: FAILED"
+            exit 1
+          fi
+
+          echo "PHYSICS: PASS"
