@@ -280,3 +280,7 @@ certificates/*.pem
 # Local development overrides
 local_settings.py
 development.ini
+
+# Local configuration
+.config/
+.config/**
