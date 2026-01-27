@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blux://contracts/guard_receipt.schema.json",
+  "title": "Guard Receipt",
+  "type": "object",
+  "required": [
+    "receipt_id",
+    "issued_at",
+    "trace_id",
+    "constraints",
+    "bindings"
+  ],
+  "properties": {
+    "receipt_id": {"type": "string"},
+    "issued_at": {"type": "number"},
+    "trace_id": {"type": "string"},
+    "constraints": {
+      "type": "object",
+      "required": ["sandbox_profile", "network"],
+      "properties": {
+        "sandbox_profile": {"type": "string"},
+        "network": {"type": "object"},
+        "allowed_commands": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "allowed_paths": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "timeout_s": {"type": "number"},
+        "working_dir": {"type": "string"},
+        "environment": {"type": "object"},
+        "resource_limits": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "bindings": {"type": "object"}
+  },
+  "additionalProperties": true
+}

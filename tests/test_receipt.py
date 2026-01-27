@@ -13,32 +13,13 @@ from blux_guard.core import receipt as receipt_engine
 def _base_envelope() -> dict:
     return {
         "trace_id": "trace-123",
-        "capability_token_ref": "cap-token-abc",
         "working_dir": "/tmp/workdir",
     }
 
 
-def test_band_critical_blocks() -> None:
-    receipt = receipt_engine.issue_guard_receipt(
-        _base_envelope(),
-        discernment_report={"band": "critical"},
-    )
-    assert receipt.decision == "BLOCK"
-    assert "band.critical" in receipt.reason_codes
-
-
-def test_uncertainty_high_requires_confirmation() -> None:
-    receipt = receipt_engine.issue_guard_receipt(
-        _base_envelope(),
-        discernment_report={"uncertainty": "high"},
-    )
-    assert receipt.decision == "REQUIRE_CONFIRM"
-
-
-def test_default_allows_with_path_allowlist() -> None:
+def test_mechanical_receipt_includes_constraints() -> None:
     receipt = receipt_engine.issue_guard_receipt(_base_envelope())
     payload = receipt.to_dict()
-    assert receipt.decision == "ALLOW"
     assert receipt.constraints.get("allowed_paths")
     assert payload["$schema"] == receipt_engine.GUARD_RECEIPT_SCHEMA_ID
 

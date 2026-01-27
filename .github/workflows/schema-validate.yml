@@ -1,0 +1,147 @@
+---
+name: schema-validate
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 9 * * 1"  # weekly Monday 09:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schema-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validators
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install jsonschema
+
+      - name: Validate schema bundle (JSON validity + metaschema + $ref existence)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          from jsonschema import Draft202012Validator
+
+          contracts_dir = Path("contracts")
+          if not contracts_dir.exists():
+            print("SCHEMA FAIL: contracts/ directory not found", file=sys.stderr)
+            sys.exit(1)
+
+          # Gather JSON files in contracts/
+          json_files = [p for p in contracts_dir.rglob("*.json") if p.is_file()]
+          if not json_files:
+            print("SCHEMA FAIL: no .json files found under contracts/", file=sys.stderr)
+            sys.exit(1)
+
+          def load_json(p: Path):
+            try:
+              return json.loads(p.read_text(encoding="utf-8"))
+            except Exception as e:
+              raise RuntimeError(f"Invalid JSON: {p}: {e}")
+
+          # 1) JSON validity for all contracts/**/*.json
+          all_json = {}
+          for p in json_files:
+            data = load_json(p)
+            all_json[str(p)] = data
+
+          # 2) JSON Schema metaschema validity (Draft 2020-12) for schema files only
+          def is_schema_file(p: Path):
+            name = p.name.lower()
+            if name.endswith(".schema.json"):
+              return True
+            return "schema" in name
+
+          schemas = {}
+          for p in json_files:
+            if not is_schema_file(p):
+              continue
+            data = all_json[str(p)]
+            schemas[str(p)] = data
+            try:
+              Draft202012Validator.check_schema(data)
+            except Exception as e:
+              raise RuntimeError(f"Invalid JSON Schema (metaschema check failed): {p}: {e}")
+
+          # 3) Cross-schema reference sanity:
+          # Walk all "$ref" entries; if a ref is a relative path to a file, ensure it exists.
+          def walk_refs(obj, refs):
+            if isinstance(obj, dict):
+              for k, v in obj.items():
+                if k == "$ref" and isinstance(v, str):
+                  refs.append(v)
+                else:
+                  walk_refs(v, refs)
+            elif isinstance(obj, list):
+              for it in obj:
+                walk_refs(it, refs)
+
+          missing = []
+          repo_root = Path.cwd().resolve()
+          for path_str, schema in schemas.items():
+            refs = []
+            walk_refs(schema, refs)
+            base = Path(path_str).parent
+
+            for ref in refs:
+              # Ignore pure fragments "#/..." (internal refs)
+              if ref.startswith("#"):
+                continue
+
+              # Parse URI. If it has a scheme (http/https/blux/etc), we do not resolve here.
+              parsed = urlparse(ref)
+              if parsed.scheme:
+                continue
+
+              # Relative file path refs like "../other.schema.json#/defs/X"
+              ref_path = ref.split("#", 1)[0]
+              if not ref_path:
+                continue
+
+              candidate = (base / ref_path).resolve()
+              # Ensure candidate is inside repo and exists
+              if not candidate.exists():
+                missing.append(f"{path_str} -> missing $ref file: {ref_path}")
+                continue
+              try:
+                is_within = candidate.is_relative_to(repo_root)
+              except AttributeError:
+                is_within = str(candidate).startswith(str(repo_root))
+              if not is_within:
+                missing.append(f"{path_str} -> $ref outside repo root: {ref_path}")
+
+          if missing:
+            print("SCHEMA FAIL: unresolved file refs:")
+            for m in missing:
+              print(" -", m)
+            sys.exit(1)
+
+          print("SCHEMA: PASS")
+          PY

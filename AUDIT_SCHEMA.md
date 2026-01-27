@@ -8,13 +8,13 @@ Audit records are JSON objects written as JSONL to `~/.config/blux-guard/logs/au
 
 - `ts` (float): Unix timestamp in seconds.
 - `level` (str): `debug` | `info` | `warn` | `error`.
-- `actor` (str): Source component (`cli`, `tui`, `scanner`, etc.).
-- `action` (str): Event identifier (e.g., `tui.launch`, `cli.doctor`).
+- `actor` (str): Source component (`guard`, `telemetry`, `scanner`, etc.).
+- `action` (str): Event identifier (e.g., `guard.receipt.issued`).
 - `stream` (str): `audit`.
 - `payload` (object): Structured data for the action (command text, paths, counts, status).
 - `channel` (str): Backward-compatible alias for `action` used by existing telemetry sinks.
 - `correlation_id` (str): UUID4 tying related events together.
-- `component` (str, optional): Subsystem name (e.g., `quantum_plugin`, `install`).
+- `component` (str, optional): Subsystem name (e.g., `receipt`, `telemetry`).
 
 # Guarantees
 
@@ -28,5 +28,4 @@ Audit records are JSON objects written as JSONL to `~/.config/blux-guard/logs/au
 
 # Correlation
 
-- CLI commands create a `correlation_id` at invocation and pass it into TUI and exports.
-- TUI screen transitions emit `tui.screen.enter`/`exit` events with the same correlation id when available.
+- Use `correlation_id` to tie related receipt emissions and constraint checks together.

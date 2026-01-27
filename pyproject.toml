@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "blux-guard"
 version = "1.0.0"
-description = "Terminal TUI Dev Security / BLUX Ecosystem Cockpit"
+description = "Mechanical guard receipt emission for BLUX"
 readme = "README.md"
 authors = [{ name = "Outer Void Team" }]
 license = { text = "Apache-2.0" }
 requires-python = ">=3.9"
-keywords = ["security", "tui", "textual", "blux", "guard", "cli", "quantum"]
+keywords = ["security", "blux", "guard", "receipt", "mechanical"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -20,31 +20,10 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Security",
 ]
-dependencies = [
-    "argon2-cffi",
-    "cryptography",
-    "textual>=0.62.0",
-    "textual-dev",
-    "rich>=13.7.0",
-    "pysqlite3",
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.30.0",
-    "typer>=0.12.3",
-    "psutil>=5.9.8",
-    "sqlite-utils>=3.36",
-    "prometheus-client>=0.20.0",
-    "pydantic>=2.7.0",
-    "pyyaml>=6.0.1",
-    "jsonschema>=4.23.0",
-]
+dependencies = ["jsonschema>=4.23.0"]
 
 [project.optional-dependencies]
 dev = ["ruff", "mypy", "pytest"]
-[project.scripts]
-bluxq = "blux_guard.cli.bluxq:app"
-bluxqd = "blux_guard.api.guardd:start"
-blux-guard = "blux_guard.cli.blux_guard:app"
-
 [tool.setuptools]
 license-files = [
     "LICENSE",
@@ -56,6 +35,3 @@ license-files = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["blux_guard*"]
-
-[tool.setuptools.package-data]
-blux_guard = ["contracts/phase0/*.json"]

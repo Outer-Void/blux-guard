@@ -1,4 +1,4 @@
-"""Runtime helpers shared across CLI and daemon entry points."""
+"""Runtime helpers shared across guard mechanics."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def ensure_supported_python(component: str, *, minimum: Tuple[int, int] = _MIN_V
     Parameters
     ----------
     component:
-        Human readable component identifier (e.g. ``"bluxq"``).
+        Human readable component identifier (e.g. ``"guard"``).
     minimum:
         Minimal accepted Python major/minor version tuple.
     """

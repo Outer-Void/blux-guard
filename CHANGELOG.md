@@ -1,6 +1,6 @@
 # Changelog
 
-## [GUARD-PM2-FIX] Add Typer dependency; make telemetry best-effort; docs refresh
-- Declare CLI/runtime dependencies including Typer, psutil, FastAPI, and Prometheus exporters.
-- Harden telemetry writer with best-effort JSONL/SQLite handling and startup degrade notices.
-- Document cockpit usage, CLI commands, telemetry behavior, and troubleshooting across the repo.
+## [PHASE0-MECHANICAL] Remove control-plane surfaces; align contracts and docs
+- Remove control-plane services, rich CLI surfaces, and cockpit UI modules.
+- Move contracts to repo-root `contracts/` and align schemas to mechanical receipts.
+- Replace legacy CI with canonical Phase 0 workflows.

@@ -1,0 +1,78 @@
+---
+name: lint-docs
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 9 * * 1"  # weekly Monday 09:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mechanical doc structure checks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # NOTE: These are mechanical presence checks only.
+          # They do NOT judge correctness, tone, or meaning.
+
+          must_exist() {
+            local f="$1"
+            if [[ ! -f "$f" ]]; then
+              echo "LINT FAIL: missing required file: $f"
+              exit 1
+            fi
+          }
+
+          must_contain() {
+            local f="$1"
+            local s="$2"
+            if ! grep -F -q "$s" "$f"; then
+              echo "LINT FAIL: '$f' missing required section string: $s"
+              exit 1
+            fi
+          }
+
+          # Required docs
+          must_exist "README.md"
+
+          if ! grep -qi "BLUX" "README.md"; then
+            echo "LINT FAIL: README.md missing required marker: BLUX"
+            exit 1
+          fi
+
+          if ! grep -qi "contracts" "README.md"; then
+            if [[ ! -d "contracts" ]]; then
+              echo "LINT FAIL: README.md missing 'contracts' and contracts/ directory not found"
+              exit 1
+            fi
+          fi
+
+          if ! grep -qi "schema" "README.md"; then
+            if [[ ! -d "contracts" ]] || [[ -z "$(find contracts -type f -name '*.json' -print -quit)" ]]; then
+              echo "LINT FAIL: README.md missing 'schema' and no contracts/*.json found"
+              exit 1
+            fi
+          fi
+
+          # Optional: if you maintain a CONTRIBUTING.md in ecosystem, enforce it exists
+          # (comment out if not used)
+          # must_exist "CONTRIBUTING.md"
+
+          echo "LINT: PASS"
